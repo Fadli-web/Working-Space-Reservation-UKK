@@ -33,7 +33,7 @@ export default function LoginPage() {
             await login(username.trim(), password);
         } catch (err: any) {
             setErrorMsg(
-                err.response?.data?.message || 'Login gagal. Periksa kembali username dan password Anda.'
+                err.response?.data?.message || err.message || 'Login gagal. Periksa kembali username dan password Anda.'
             );
         } finally {
             setIsSubmitting(false);

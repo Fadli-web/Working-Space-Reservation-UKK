@@ -129,6 +129,28 @@ export async function PUT(req: NextRequest) {
     return handleUpdate(req);
 }
 
+// DELETE /api/member/profile?username=...&member_id=...
+export async function DELETE(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const username = searchParams.get('username')?.toLowerCase()?.trim();
+        const memberId = searchParams.get('member_id');
+
+        const store = getProfilesStore();
+        if (username && store[username]) {
+            delete store[username];
+        }
+        if (memberId && store[`id_${memberId}`]) {
+            delete store[`id_${memberId}`];
+        }
+        saveProfilesStore(store);
+
+        return NextResponse.json({ status: true, message: 'Data member berhasil dihapus dari penyimpanan server.' });
+    } catch (e: any) {
+        return NextResponse.json({ status: false, message: e.message }, { status: 500 });
+    }
+}
+
 async function handleUpdate(req: NextRequest) {
     try {
         const authHeader = req.headers.get('authorization');

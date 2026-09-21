@@ -60,14 +60,20 @@ export default function AdminMembersPage() {
     const fetchMembers = async (search = '') => {
         setLoading(true);
         try {
+            const timestamp = Date.now();
             const url = search.trim()
-                ? `/api/admin/members?search=${encodeURIComponent(search.trim())}`
-                : '/api/admin/members';
+                ? `/api/admin/members?search=${encodeURIComponent(search.trim())}&_t=${timestamp}`
+                : `/api/admin/members?_t=${timestamp}`;
 
-            // Ambil data member dari backend dan data profil permanen dari server Next.js lokal
+            // Ambil data member dari backend secara real-time (tanpa cache)
             const [res, serverProfilesRes] = await Promise.all([
-                api.get(url),
-                api.get('/api/member/profile?all=true').catch(() => ({ data: { data: {} } })),
+                api.get(url, {
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                    }
+                }),
+                api.get(`/api/member/profile?all=true&_t=${timestamp}`).catch(() => ({ data: { data: {} } })),
             ]);
 
             const rawMembers = res.data.data || [];
@@ -78,26 +84,32 @@ export default function AdminMembersPage() {
                 const username = (m.user?.username || m.username || '').toLowerCase();
                 const sProfile = serverStore[username] || serverStore[`id_${m.id}`] || {};
 
-                const cachedAvatar =
-                    sProfile.foto ||
-                    (typeof window !== 'undefined' && localStorage.getItem(`member_avatar_${m.id}`)) ||
-                    (typeof window !== 'undefined' && username ? localStorage.getItem(`member_avatar_override_${username}`) : null) ||
-                    (typeof window !== 'undefined' && username ? (() => {
-                        try {
-                            const p = JSON.parse(localStorage.getItem(`profile_override_user_${username}`) || '{}');
-                            return p.foto || null;
-                        } catch {
-                            return null;
-                        }
-                    })() : null);
+                let cleanInstansi = m.instansi || '';
+                let photo = m.foto || null;
+
+                // Unpack metadata dari instansi MySQL jika ada
+                if (cleanInstansi.includes('|||')) {
+                    const parts = cleanInstansi.split('|||');
+                    cleanInstansi = parts[0];
+                    try {
+                        const extra = JSON.parse(parts[1]);
+                        if (extra.foto) photo = extra.foto;
+                    } catch {}
+                }
+
+                if (!photo) {
+                    photo = sProfile.foto ||
+                        (typeof window !== 'undefined' && localStorage.getItem(`member_avatar_${m.id}`)) ||
+                        (typeof window !== 'undefined' && username ? localStorage.getItem(`member_avatar_override_${username}`) : null);
+                }
 
                 return {
                     ...m,
                     nama_member: sProfile.nama_member || m.nama_member,
-                    instansi: sProfile.instansi || m.instansi,
+                    instansi: sProfile.instansi || cleanInstansi,
                     telp: sProfile.telp || m.telp,
                     alamat: sProfile.alamat || m.alamat,
-                    foto: m.foto || cachedAvatar || '',
+                    foto: photo || '',
                 };
             });
 
@@ -229,13 +241,32 @@ export default function AdminMembersPage() {
     const handleDelete = async (id: number) => {
         if (!confirm('TINDAKAN INI PERMANEN. HAPUS DATA MEMBER INI?')) return;
         try {
+            const targetMember = members.find((m) => m.id === id);
+            const targetUsername = targetMember?.user?.username || targetMember?.username;
+
+            // Hapus langsung dari antarmuka seketika (optimistic update real-time)
+            setMembers((prev) => prev.filter((m) => m.id !== id));
+
             await api.delete(`/api/admin/members/${id}`);
+
+            // Hapus juga dari store server
+            if (targetUsername) {
+                api.delete(`/api/member/profile?username=${encodeURIComponent(targetUsername)}&member_id=${id}`).catch(() => {});
+            }
+
             if (typeof window !== 'undefined') {
                 localStorage.removeItem(`member_avatar_${id}`);
+                if (targetUsername) {
+                    localStorage.removeItem(`member_avatar_override_${targetUsername.toLowerCase()}`);
+                    localStorage.removeItem(`profile_override_user_${targetUsername.toLowerCase()}`);
+                }
             }
-            fetchMembers(searchQuery);
+
+            await fetchMembers(searchQuery);
+            alert('Data member berhasil dihapus.');
         } catch (error: any) {
             alert(error.response?.data?.message || 'Gagal menghapus member.');
+            fetchMembers(searchQuery);
         }
     };
 

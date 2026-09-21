@@ -173,34 +173,6 @@ export default function HomePage() {
                 </button>
               </div>
 
-              {/* Social Proof / Clients Badge */}
-              <div className="pt-6 flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                    alt="User 1"
-                  />
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                    alt="User 2"
-                  />
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                    alt="User 3"
-                  />
-                </div>
-                <div>
-                  <span className="block text-xs font-black text-[#1E211A] leading-tight">
-                    10.000+ Member Terdaftar
-                  </span>
-                  <span className="text-[11px] font-bold text-[#6E745F]">
-                    Rating 4.9 Kepuasan Member
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* Right Hero Image with Floating Feature Badges */}
@@ -678,232 +650,238 @@ export default function HomePage() {
       </footer>
 
       {/* ==================== MODAL: SCAN QR CODE ==================== */}
-      {qrModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5 relative">
-            <div className="flex items-center justify-between">
+      {
+        qrModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-sm rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5 relative">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    setQrModalOpen(false);
+                    setScanSuccess(false);
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-bold transition"
+                >
+                  ✕
+                </button>
+                <h3 className="text-base font-black uppercase tracking-wider text-[#1E211A]">
+                  Scan QR Code
+                </h3>
+                <div className="w-8" />
+              </div>
+
+              <div className="relative mx-auto w-60 h-60 flex items-center justify-center bg-[#F2F3EF] rounded-3xl border border-[#DFE2DA] overflow-hidden">
+                <div className="absolute top-4 left-4 w-7 h-7 border-t-4 border-l-4 border-[#2D3328] rounded-tl-lg" />
+                <div className="absolute top-4 right-4 w-7 h-7 border-t-4 border-r-4 border-[#2D3328] rounded-tr-lg" />
+                <div className="absolute bottom-4 left-4 w-7 h-7 border-b-4 border-l-4 border-[#2D3328] rounded-bl-lg" />
+                <div className="absolute bottom-4 right-4 w-7 h-7 border-b-4 border-r-4 border-[#2D3328] rounded-br-lg" />
+                <div className="absolute left-6 right-6 h-0.5 bg-[#6E745F] shadow-[0_0_10px_#6E745F] animate-scan pointer-events-none z-10" />
+
+                <svg className="w-32 h-32 text-[#2D3328]" viewBox="0 0 100 100" fill="currentColor">
+                  <path d="M10 10h30v30h-30z M16 16v18h18v-18z M22 22h6v6h-6z" />
+                  <path d="M60 10h30v30h-30z M66 16v18h18v-18z M72 22h6v6h-6z" />
+                  <path d="M10 60h30v30h-30z M16 66v18h18v-18z M22 72h6v6h-6z" />
+                  <rect x="46" y="12" width="6" height="6" />
+                  <rect x="46" y="24" width="6" height="6" />
+                  <rect x="46" y="36" width="6" height="6" />
+                  <rect x="12" y="46" width="6" height="6" />
+                  <rect x="24" y="46" width="6" height="6" />
+                  <rect x="36" y="46" width="6" height="6" />
+                  <rect x="60" y="48" width="8" height="8" />
+                  <rect x="74" y="48" width="6" height="6" />
+                  <rect x="86" y="48" width="6" height="6" />
+                  <rect x="48" y="62" width="8" height="8" />
+                  <rect x="62" y="62" width="6" height="6" />
+                  <rect x="76" y="62" width="10" height="6" />
+                  <rect x="48" y="76" width="10" height="6" />
+                  <rect x="64" y="76" width="8" height="8" />
+                  <rect x="78" y="76" width="8" height="8" />
+                </svg>
+              </div>
+
+              <div className="text-center space-y-2">
+                {scanSuccess ? (
+                  <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-700">
+                    Check-in Berhasil! Akses workstation telah aktif.
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-500 font-medium">
+                    Arahkan kamera ke QR Code di meja untuk verifikasi check-in
+                  </p>
+                )}
+              </div>
+
               <button
-                onClick={() => {
-                  setQrModalOpen(false);
-                  setScanSuccess(false);
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-bold transition"
+                onClick={() => setScanSuccess(true)}
+                className="w-full rounded-full bg-[#2D3328] py-3.5 text-xs font-black text-white hover:bg-black transition active:scale-95 cursor-pointer"
               >
-                ✕
+                {scanSuccess ? 'Selesai' : 'Simulasi Scan QR'}
               </button>
-              <h3 className="text-base font-black uppercase tracking-wider text-[#1E211A]">
-                Scan QR Code
-              </h3>
-              <div className="w-8" />
             </div>
-
-            <div className="relative mx-auto w-60 h-60 flex items-center justify-center bg-[#F2F3EF] rounded-3xl border border-[#DFE2DA] overflow-hidden">
-              <div className="absolute top-4 left-4 w-7 h-7 border-t-4 border-l-4 border-[#2D3328] rounded-tl-lg" />
-              <div className="absolute top-4 right-4 w-7 h-7 border-t-4 border-r-4 border-[#2D3328] rounded-tr-lg" />
-              <div className="absolute bottom-4 left-4 w-7 h-7 border-b-4 border-l-4 border-[#2D3328] rounded-bl-lg" />
-              <div className="absolute bottom-4 right-4 w-7 h-7 border-b-4 border-r-4 border-[#2D3328] rounded-br-lg" />
-              <div className="absolute left-6 right-6 h-0.5 bg-[#6E745F] shadow-[0_0_10px_#6E745F] animate-scan pointer-events-none z-10" />
-
-              <svg className="w-32 h-32 text-[#2D3328]" viewBox="0 0 100 100" fill="currentColor">
-                <path d="M10 10h30v30h-30z M16 16v18h18v-18z M22 22h6v6h-6z" />
-                <path d="M60 10h30v30h-30z M66 16v18h18v-18z M72 22h6v6h-6z" />
-                <path d="M10 60h30v30h-30z M16 66v18h18v-18z M22 72h6v6h-6z" />
-                <rect x="46" y="12" width="6" height="6" />
-                <rect x="46" y="24" width="6" height="6" />
-                <rect x="46" y="36" width="6" height="6" />
-                <rect x="12" y="46" width="6" height="6" />
-                <rect x="24" y="46" width="6" height="6" />
-                <rect x="36" y="46" width="6" height="6" />
-                <rect x="60" y="48" width="8" height="8" />
-                <rect x="74" y="48" width="6" height="6" />
-                <rect x="86" y="48" width="6" height="6" />
-                <rect x="48" y="62" width="8" height="8" />
-                <rect x="62" y="62" width="6" height="6" />
-                <rect x="76" y="62" width="10" height="6" />
-                <rect x="48" y="76" width="10" height="6" />
-                <rect x="64" y="76" width="8" height="8" />
-                <rect x="78" y="76" width="8" height="8" />
-              </svg>
-            </div>
-
-            <div className="text-center space-y-2">
-              {scanSuccess ? (
-                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-700">
-                  Check-in Berhasil! Akses workstation telah aktif.
-                </div>
-              ) : (
-                <p className="text-xs text-neutral-500 font-medium">
-                  Arahkan kamera ke QR Code di meja untuk verifikasi check-in
-                </p>
-              )}
-            </div>
-
-            <button
-              onClick={() => setScanSuccess(true)}
-              className="w-full rounded-full bg-[#2D3328] py-3.5 text-xs font-black text-white hover:bg-black transition active:scale-95 cursor-pointer"
-            >
-              {scanSuccess ? 'Selesai' : 'Simulasi Scan QR'}
-            </button>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* ==================== MODAL: FILTER SEARCH ==================== */}
-      {filterModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#E6E8E2] pb-3">
-              <h3 className="text-lg font-black uppercase tracking-wider text-[#1E211A]">
-                Filter Ruangan
-              </h3>
+      {
+        filterModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-[#E6E8E2] pb-3">
+                <h3 className="text-lg font-black uppercase tracking-wider text-[#1E211A]">
+                  Filter Ruangan
+                </h3>
+                <button
+                  onClick={() => setFilterModalOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-bold text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
+                  Rating Minimal
+                </label>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const active = selectedRating === star;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setSelectedRating(active ? null : star)}
+                        className={`flex-1 rounded-2xl py-2 text-xs font-bold transition flex items-center justify-center gap-1 border ${active
+                          ? 'bg-[#2D3328] text-white border-[#2D3328]'
+                          : 'bg-white text-neutral-700 border-[#E6E8E2]'
+                          }`}
+                      >
+                        <span>{star}</span>
+                        <span className="text-[10px]">Bintang</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Price Tier */}
+              <div>
+                <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
+                  Kisaran Tarif
+                </label>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {['$', '$$', '$$$'].map((tier) => {
+                    const active = selectedPriceTier === tier;
+                    return (
+                      <button
+                        key={tier}
+                        type="button"
+                        onClick={() => setSelectedPriceTier(tier)}
+                        className={`rounded-2xl py-2.5 text-xs font-bold transition border ${active
+                          ? 'bg-[#2D3328] text-white border-[#2D3328]'
+                          : 'bg-white text-neutral-700 border-[#E6E8E2]'
+                          }`}
+                      >
+                        {tier}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
+                    Durasi Penggunaan
+                  </label>
+                  <span className="text-xs font-black text-[#1E211A]">
+                    {durationHours} Jam
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="8"
+                  value={durationHours}
+                  onChange={(e) => setDurationHours(Number(e.target.value))}
+                  className="mt-2 w-full accent-[#2D3328] cursor-pointer"
+                />
+              </div>
+
+              {/* Amenities */}
+              <div>
+                <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
+                  Fasilitas Ruangan
+                </label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[
+                    'WiFi 100Mbps',
+                    'Stopkontak',
+                    'AC Dingin',
+                    'Smart TV',
+                    'Refill Kopi',
+                    'Whiteboard',
+                  ].map((item) => {
+                    const active = selectedAmenities.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => toggleAmenity(item)}
+                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition border ${active
+                          ? 'bg-[#2D3328] text-white border-[#2D3328]'
+                          : 'bg-white text-neutral-600 border-[#E6E8E2]'
+                          }`}
+                      >
+                        {item} {active && '✓'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <button
+                type="button"
                 onClick={() => setFilterModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-bold text-xs"
+                className="w-full rounded-full bg-[#2D3328] py-3.5 text-xs font-black text-white hover:bg-black transition shadow-md active:scale-95 cursor-pointer"
               >
-                ✕
+                Terapkan Filter ({filteredSpaces.length} Hasil)
               </button>
             </div>
-
-            {/* Rating */}
-            <div>
-              <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
-                Rating Minimal
-              </label>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                {[1, 2, 3, 4, 5].map((star) => {
-                  const active = selectedRating === star;
-                  return (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setSelectedRating(active ? null : star)}
-                      className={`flex-1 rounded-2xl py-2 text-xs font-bold transition flex items-center justify-center gap-1 border ${active
-                        ? 'bg-[#2D3328] text-white border-[#2D3328]'
-                        : 'bg-white text-neutral-700 border-[#E6E8E2]'
-                        }`}
-                    >
-                      <span>{star}</span>
-                      <span className="text-[10px]">Bintang</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Price Tier */}
-            <div>
-              <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
-                Kisaran Tarif
-              </label>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {['$', '$$', '$$$'].map((tier) => {
-                  const active = selectedPriceTier === tier;
-                  return (
-                    <button
-                      key={tier}
-                      type="button"
-                      onClick={() => setSelectedPriceTier(tier)}
-                      className={`rounded-2xl py-2.5 text-xs font-bold transition border ${active
-                        ? 'bg-[#2D3328] text-white border-[#2D3328]'
-                        : 'bg-white text-neutral-700 border-[#E6E8E2]'
-                        }`}
-                    >
-                      {tier}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
-                  Durasi Penggunaan
-                </label>
-                <span className="text-xs font-black text-[#1E211A]">
-                  {durationHours} Jam
-                </span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="8"
-                value={durationHours}
-                onChange={(e) => setDurationHours(Number(e.target.value))}
-                className="mt-2 w-full accent-[#2D3328] cursor-pointer"
-              />
-            </div>
-
-            {/* Amenities */}
-            <div>
-              <label className="text-xs font-extrabold uppercase text-neutral-400 tracking-wider">
-                Fasilitas Ruangan
-              </label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {[
-                  'WiFi 100Mbps',
-                  'Stopkontak',
-                  'AC Dingin',
-                  'Smart TV',
-                  'Refill Kopi',
-                  'Whiteboard',
-                ].map((item) => {
-                  const active = selectedAmenities.includes(item);
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => toggleAmenity(item)}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition border ${active
-                        ? 'bg-[#2D3328] text-white border-[#2D3328]'
-                        : 'bg-white text-neutral-600 border-[#E6E8E2]'
-                        }`}
-                    >
-                      {item} {active && '✓'}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setFilterModalOpen(false)}
-              className="w-full rounded-full bg-[#2D3328] py-3.5 text-xs font-black text-white hover:bg-black transition shadow-md active:scale-95 cursor-pointer"
-            >
-              Terapkan Filter ({filteredSpaces.length} Hasil)
-            </button>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* ==================== MODAL: MY ORDER TICKET ==================== */}
-      {orderModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5">
+      {
+        orderModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] bg-white p-7 shadow-2xl space-y-5">
 
 
 
 
-            <div className="flex gap-2">
-              <Link
-                href="/member/reservasi/1"
-                className="flex-1 rounded-full bg-[#2D3328] py-3 text-xs font-black text-white hover:bg-black transition active:scale-95 text-center"
-              >
-                Buka E-Ticket Lengkap
-              </Link>
-              <button
-                onClick={() => setOrderModalOpen(false)}
-                className="rounded-full border border-[#E6E8E2] px-5 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-100 transition"
-              >
-                Tutup
-              </button>
+              <div className="flex gap-2">
+                <Link
+                  href="/member/reservasi/1"
+                  className="flex-1 rounded-full bg-[#2D3328] py-3 text-xs font-black text-white hover:bg-black transition active:scale-95 text-center"
+                >
+                  Buka E-Ticket Lengkap
+                </Link>
+                <button
+                  onClick={() => setOrderModalOpen(false)}
+                  className="rounded-full border border-[#E6E8E2] px-5 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-100 transition"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-    </div>
+    </div >
   );
 }

@@ -26,6 +26,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const data = await authService.getProfile();
 
+            // Jika akun adalah member namun data profil member-nya sudah tidak ada di backend MySQL (telah dihapus admin)
+            if (data && data.role === 'member' && !data.member) {
+                const u = data.username ? data.username.toLowerCase().trim() : '';
+                if (u && typeof window !== 'undefined') {
+                    localStorage.removeItem(`profile_override_user_${u}`);
+                    localStorage.removeItem(`member_avatar_override_${u}`);
+                }
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('token');
+                }
+                setUser(null);
+                setLoading(false);
+                return;
+            }
+
             if (data && typeof window !== 'undefined') {
                 const uName = data.username ? data.username.toLowerCase().trim() : '';
                 const userKey = uName ? `profile_override_user_${uName}` : null;
@@ -238,6 +253,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const login = async (username: string, password: string) => {
         const data = await authService.login({ username, password });
+
+        // Jika akun ber-role member tetapi data profil member di database MySQL sudah dihapus oleh Admin
+        if (data.role === 'member' && !data.member) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+                const u = username.toLowerCase().trim();
+                localStorage.removeItem(`profile_override_user_${u}`);
+                localStorage.removeItem(`member_avatar_override_${u}`);
+            }
+            throw new Error('Akun member ini telah dihapus oleh Admin atau sudah tidak aktif.');
+        }
+
         localStorage.setItem('token', data.access_token);
 
         let memberData = data.member;
