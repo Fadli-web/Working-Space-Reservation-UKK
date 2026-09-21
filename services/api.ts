@@ -12,6 +12,7 @@ api.interceptors.request.use((config) => {
     const internalRoutes = [
         '/api/member/profile',
         '/api/member/change-password',
+        '/api/admin/profile',
     ];
     if (config.url && internalRoutes.some((route) => config.url?.startsWith(route))) {
         config.baseURL = '';

@@ -145,7 +145,7 @@ export default function HomePage() {
               </span>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#1E211A] leading-[1.08]">
-                RUANG KERJA UNTUK RITME, KENYAMANAN DAN FOKUS MAKSIMAL
+                RUANG KERJA ESTETIK DAN NYAMAN
               </h1>
 
               <p className="text-xs sm:text-sm md:text-base font-medium text-[#4D5344] leading-relaxed max-w-xl">
@@ -207,7 +207,7 @@ export default function HomePage() {
             <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
               <div className="relative w-full max-w-md h-80 sm:h-[400px] rounded-[2rem] overflow-hidden shadow-lg border border-white/60">
                 <img
-                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=900&q=80"
+                  src="https://d1r9hss9q19p18.cloudfront.net/uploads/2024/12/Tipe-Orang-yang-Disenangi-di-Kantor.jpg"
                   alt="Modern Coworking Space People"
                   className="w-full h-full object-cover"
                 />
@@ -216,10 +216,10 @@ export default function HomePage() {
                 <div className="absolute top-4 right-4 rounded-2xl bg-white/90 backdrop-blur-md p-3 border border-white/80 shadow-md">
                   <div>
                     <span className="text-[10px] font-black uppercase text-[#2D3328] block leading-tight">
-                      WiFi 100 Mbps
+                      Reservasi Mudah
                     </span>
                     <span className="text-[9px] font-medium text-neutral-500">
-                      Dedicated Fiber LAN
+                      24/7 Online
                     </span>
                   </div>
                 </div>
@@ -227,10 +227,10 @@ export default function HomePage() {
                 <div className="absolute top-20 right-4 rounded-2xl bg-white/90 backdrop-blur-md p-3 border border-white/80 shadow-md">
                   <div>
                     <span className="text-[10px] font-black uppercase text-[#2D3328] block leading-tight">
-                      Ergonomic Seats
+                      Admin Responsif
                     </span>
                     <span className="text-[9px] font-medium text-neutral-500">
-                      Herman Miller Style
+                      kemudahan pengguna
                     </span>
                   </div>
                 </div>
@@ -238,10 +238,10 @@ export default function HomePage() {
                 <div className="absolute bottom-4 left-4 rounded-2xl bg-white/90 backdrop-blur-md p-3 border border-white/80 shadow-md">
                   <div>
                     <span className="text-[10px] font-black uppercase text-[#2D3328] block leading-tight">
-                      RFID & QR Check-in
+                      E Ticket Mudah digunakan
                     </span>
                     <span className="text-[9px] font-medium text-neutral-500">
-                      Verifikasi Instan 24/7
+                      Mudah digunakan
                     </span>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function HomePage() {
                 { id: 'desk', label: 'Personal Desk' },
                 { id: 'meeting_room', label: 'Meeting Room' },
                 { id: 'private_office', label: 'Private Office' },
-                { id: 'event_space', label: 'Event Hall' },
+
               ].map((cat) => {
                 const active = selectedCategory === cat.id;
                 return (
@@ -461,32 +461,6 @@ export default function HomePage() {
               <img
                 src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80"
                 alt="Private Office"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-            </div>
-          </div>
-
-          {/* Card 4: EVENT SPACE */}
-          <div className="relative overflow-hidden rounded-3xl bg-[#ECEEE8] p-6 sm:p-8 flex items-center justify-between border border-[#E0E3DB] group">
-            <div className="max-w-[55%] space-y-2.5 z-10">
-              <h3 className="text-2xl sm:text-3xl font-black uppercase text-[#1E211A] tracking-tight">
-                EVENT SPACE
-              </h3>
-              <p className="text-xs text-[#555A4C] leading-relaxed">
-                Aula seminar, tech workshop, dan networking berkapasitas hingga 50 peserta.
-              </p>
-              <Link
-                href="/member/spaces?tipe=event_space"
-                className="inline-flex items-center gap-1.5 text-xs font-black text-[#2D3328] group-hover:underline pt-1"
-              >
-                <span>Lihat Ruangan</span>
-                <span>→</span>
-              </Link>
-            </div>
-            <div className="w-36 h-36 sm:w-48 sm:h-48 rounded-2xl overflow-hidden shadow-md -mr-2">
-              <img
-                src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&q=80"
-                alt="Event Space"
                 className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
               />
             </div>

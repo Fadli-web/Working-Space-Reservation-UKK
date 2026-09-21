@@ -91,7 +91,11 @@ export default function MemberHistoriPage() {
                 // Enrich items with e-ticket data for accurate pricing
                 const enrichedItems = await Promise.all(histData.items.map(enrichItemWithTicket));
                 const calcTotal = enrichedItems.reduce((acc: number, cur: any) => {
-                    return acc + (Number(cur.total_bayar) || 0);
+                    const status = (cur.status || '').toUpperCase().trim();
+                    if (status === 'SELESAI' || status === 'COMPLETED' || status === 'DONE') {
+                        return acc + (Number(cur.total_bayar) || 0);
+                    }
+                    return acc;
                 }, 0);
                 setHistoryData({
                     ...histData,
@@ -137,7 +141,7 @@ export default function MemberHistoriPage() {
 
             // Hitung total pengeluaran hanya dari yang SELESAI
             const completedItems = enrichedItems.filter((item: any) => {
-                const status = (item.status || '').toUpperCase();
+                const status = (item.status || '').toUpperCase().trim();
                 return status === 'SELESAI' || status === 'COMPLETED' || status === 'DONE';
             });
             const totalPengeluaran = completedItems.reduce((acc: number, cur: any) => {
@@ -253,8 +257,12 @@ export default function MemberHistoriPage() {
     const items = historyData?.items || [];
     const totalReservasi = historyData?.total_reservasi ?? items.length;
     const rawTotalPengeluaran = historyData?.total_pengeluaran ?? items.reduce((acc: number, cur: any) => {
-        const val = cur.total_bayar ?? cur.total_biaya ?? cur.total_harga ?? 0;
-        return acc + (Number(val) || 0);
+        const status = (cur.status || '').toUpperCase().trim();
+        if (status === 'SELESAI' || status === 'COMPLETED' || status === 'DONE') {
+            const val = cur.total_bayar ?? cur.total_biaya ?? cur.total_harga ?? 0;
+            return acc + (Number(val) || 0);
+        }
+        return acc;
     }, 0);
     const totalPengeluaran = Number(rawTotalPengeluaran) || 0;
 

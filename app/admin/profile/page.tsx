@@ -39,6 +39,9 @@ export default function AdminProfilePage() {
                     alamat: data.alamat || localStorage.getItem('admin_space_alamat') || 'Jl. Danau Ranau, Sawojajar, Kedungkandang, Kota Malang',
                     deskripsi: data.deskripsi || localStorage.getItem('admin_space_deskripsi') || 'Coworking space modern dengan internet berkecepatan tinggi, meja kerja ergonomis, meeting room kedap suara, dan pantry lengkap.',
                 });
+                if (data.foto) {
+                    setPhotoPreview(data.foto);
+                }
             }
         } catch (error) {
             console.error('Gagal mengambil data profil admin:', error);
@@ -108,11 +111,13 @@ export default function AdminProfilePage() {
         setIsSaving(true);
         setStatusMsg(null);
 
-        // Payload sesuai DTO 8: UpdateCoworkingProfileDto (Hal. 9 & 25)
         const payload = {
             nama_coworking: form.nama_coworking.trim(),
             nama_pemilik: form.nama_pemilik.trim(),
             telp: form.telp.trim(),
+            alamat: form.alamat.trim(),
+            deskripsi: form.deskripsi.trim(),
+            foto: photoPreview || undefined,
         };
 
         try {

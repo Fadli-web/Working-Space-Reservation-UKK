@@ -214,14 +214,13 @@ export default function AdminReservasiPage() {
     };
 
     const getStatusStyle = (status: string) => {
-        switch (status) {
-            case 'belum_dikonfirm': return 'bg-amber-50 text-amber-800 border-amber-300';
-            case 'disetujui': return 'bg-blue-50 text-blue-700 border-blue-300';
-            case 'aktif': return 'bg-[#2D3328] text-white border-[#2D3328] shadow-xs';
-            case 'selesai': return 'bg-emerald-50 text-emerald-800 border-emerald-300';
-            case 'dibatalkan': return 'bg-rose-50 text-rose-700 border-rose-200';
-            default: return 'bg-[#F0F1ED] text-[#6E745F] border-[#EAECE6]';
-        }
+        const s = (status || '').toLowerCase().trim();
+        if (s === 'belum_dikonfirm' || s === 'pending') return 'bg-amber-50 text-amber-800 border-amber-300';
+        if (s === 'disetujui' || s === 'approved') return 'bg-blue-50 text-blue-700 border-blue-300';
+        if (s === 'aktif' || s === 'active') return 'bg-[#2D3328] text-white border-[#2D3328] shadow-xs';
+        if (s === 'selesai' || s === 'completed' || s === 'done') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
+        if (s === 'dibatalkan' || s === 'cancelled') return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-[#F0F1ED] text-[#6E745F] border-[#EAECE6]';
     };
 
     const getStatusLabel = (status: string) => {

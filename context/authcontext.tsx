@@ -89,6 +89,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         }
                     }
                 }
+
+                if (data.role === 'admin_space') {
+                    try {
+                        const adminProfRes = await api.get('/api/admin/profile');
+                        if (adminProfRes.data?.data) {
+                            data.space_owner = {
+                                ...data.space_owner,
+                                ...adminProfRes.data.data
+                            };
+                            if (avatarKey && data.space_owner.foto) {
+                                localStorage.setItem(`admin_avatar_override_${uName}`, data.space_owner.foto);
+                            }
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
             }
 
             setUser(data);

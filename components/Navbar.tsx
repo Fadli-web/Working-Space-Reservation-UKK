@@ -31,7 +31,7 @@ export default function Navbar() {
         const loadAdminAvatar = () => {
             if (typeof window !== 'undefined' && user?.username) {
                 const override = localStorage.getItem(`admin_avatar_override_${user.username.toLowerCase()}`);
-                setAdminAvatar(override || null);
+                setAdminAvatar(override || user.space_owner?.foto || null);
             }
         };
 
@@ -100,12 +100,13 @@ export default function Navbar() {
     const userInitial = displayName.charAt(0).toUpperCase();
 
     const memberPhotoUrl = getPhotoUrl(memberAvatar || user?.member?.foto);
-    const userAvatarUrl = isMember ? memberPhotoUrl : (isAdmin ? adminAvatar : null);
+    const adminPhotoUrl = getPhotoUrl(adminAvatar || user?.space_owner?.foto);
+    const userAvatarUrl = isMember ? memberPhotoUrl : (isAdmin ? adminPhotoUrl : null);
 
     // Reset status error gambar setiap kali avatar berubah
     useEffect(() => {
         setImageError(false);
-    }, [userAvatarUrl, user?.member?.foto, adminAvatar, memberAvatar]);
+    }, [userAvatarUrl, user?.member?.foto, user?.space_owner?.foto, adminAvatar, memberAvatar]);
 
     return (
         <>
