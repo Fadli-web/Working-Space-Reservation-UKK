@@ -42,9 +42,50 @@ export async function GET(req: NextRequest) {
         const username = searchParams.get('username')?.toLowerCase()?.trim();
         const memberId = searchParams.get('member_id');
         const all = searchParams.get('all');
-
         const store = getProfilesStore();
 
+        // 1. Jika Bearer token dikirimkan, periksa sesi token secara langsung dari backend (selalu up to date)
+        const authHeader = req.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.replace('Bearer ', '').trim();
+            try {
+                const profileRes = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
+                    headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
+                });
+                const user = profileRes.data?.data;
+                if (user?.username) {
+                    const uName = user.username.toLowerCase();
+                    
+                    let extraData: any = {};
+                    let rawInstansi = user.member?.instansi || '';
+                    if (rawInstansi.includes('|||')) {
+                        const parts = rawInstansi.split('|||');
+                        if (user.member) user.member.instansi = parts[0];
+                        try {
+                            if (parts[1]) extraData = JSON.parse(parts[1]);
+                        } catch(e) {}
+                    }
+                    if (!extraData.foto && store[uName]?.foto) {
+                        extraData.foto = store[uName].foto;
+                    }
+
+                    return NextResponse.json({
+                        status: true,
+                        data: {
+                            ...user.member,
+                            ...user,
+                            ...extraData,
+                            nama_member: user.member?.nama_member || user.username,
+                            instansi: user.member?.instansi || '',
+                        },
+                    });
+                }
+            } catch {
+                // Abaikan jika token gagal diverifikasi, lanjutkan ke store fallback
+            }
+        }
+
+        // 2. Fallback ke data store lokal
         if (all === 'true' || all === '1') {
             return NextResponse.json({
                 status: true,
@@ -66,44 +107,6 @@ export async function GET(req: NextRequest) {
                     status: true,
                     data: found,
                 });
-            }
-        }
-
-        // Jika Bearer token dikirimkan, periksa sesi token
-        const authHeader = req.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.replace('Bearer ', '').trim();
-            try {
-                const profileRes = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
-                    headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
-                });
-                const user = profileRes.data?.data;
-                if (user?.username) {
-                    const uName = user.username.toLowerCase();
-                    
-                    let extraData = {};
-                    let rawInstansi = user.member?.instansi || '';
-                    if (rawInstansi.includes('|||')) {
-                        const parts = rawInstansi.split('|||');
-                        if (user.member) user.member.instansi = parts[0];
-                        try {
-                            if (parts[1]) extraData = JSON.parse(parts[1]);
-                        } catch(e) {}
-                    } else if (store[uName]) {
-                        extraData = store[uName];
-                    }
-
-                    return NextResponse.json({
-                        status: true,
-                        data: {
-                            ...user.member,
-                            ...user,
-                            ...extraData,
-                        },
-                    });
-                }
-            } catch {
-                // Abaikan jika token gagal diverifikasi
             }
         }
 

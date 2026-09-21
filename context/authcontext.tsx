@@ -31,7 +31,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const userKey = uName ? `profile_override_user_${uName}` : null;
                 const avatarKey = uName ? `member_avatar_override_${uName}` : null;
 
-                // 1. Ambil data kustom permanen dari server
+                // 0. Unpack metadata permanen (foto, alamat, telp, deskripsi) langsung dari MySQL backend
+                if (data.member && data.member.instansi && data.member.instansi.includes('|||')) {
+                    const parts = data.member.instansi.split('|||');
+                    data.member.instansi = parts[0];
+                    try {
+                        const extra = JSON.parse(parts[1]);
+                        if (extra.foto) data.member.foto = extra.foto;
+                        if (extra.alamat && !data.member.alamat) data.member.alamat = extra.alamat;
+                        if (extra.telp && !data.member.telp) data.member.telp = extra.telp;
+                    } catch (e) {}
+                }
+
+                if (data.space_owner && data.space_owner.nama_pemilik && data.space_owner.nama_pemilik.includes('|||')) {
+                    const parts = data.space_owner.nama_pemilik.split('|||');
+                    data.space_owner.nama_pemilik = parts[0];
+                    try {
+                        const extra = JSON.parse(parts[1]);
+                        if (extra.foto) data.space_owner.foto = extra.foto;
+                        if (extra.alamat && !data.space_owner.alamat) data.space_owner.alamat = extra.alamat;
+                        if (extra.deskripsi && !data.space_owner.deskripsi) data.space_owner.deskripsi = extra.deskripsi;
+                    } catch (e) {}
+                }
+
+                // 1. Ambil data kustom permanen dari server lokal/Next.js jika ada
                 let serverProfile = null;
                 if (uName) {
                     serverProfile = await authService.getServerProfile(uName);
@@ -47,6 +70,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         foto: serverProfile.foto || data.member?.foto,
                     };
 
+                    // Bersihkan jika serverProfile masih membawa format |||
+                    if (data.member.instansi && data.member.instansi.includes('|||')) {
+                        data.member.instansi = data.member.instansi.split('|||')[0];
+                    }
+
                     // Sinkronisasi ke cache lokal untuk username ini
                     if (userKey) {
                         localStorage.setItem(userKey, JSON.stringify(data.member));
@@ -58,13 +86,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // Fallback jika server belum memiliki catatan: gunakan cache lokal
                     const savedOverrides = userKey ? localStorage.getItem(userKey) : null;
                     const savedAvatar = avatarKey ? localStorage.getItem(avatarKey) : null;
-                    // Clean up packed data dari nama_pemilik atau instansi
-                    if (data.space_owner && data.space_owner.nama_pemilik && data.space_owner.nama_pemilik.includes('|||')) {
-                        data.space_owner.nama_pemilik = data.space_owner.nama_pemilik.split('|||')[0];
-                    }
-                    if (data.member && data.member.instansi && data.member.instansi.includes('|||')) {
-                        data.member.instansi = data.member.instansi.split('|||')[0];
-                    }
 
                     if (savedOverrides) {
                         try {
@@ -96,6 +117,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             }).catch(() => {});
                         }
                     }
+                }
+
+                if (avatarKey && data.member?.foto) {
+                    localStorage.setItem(avatarKey, data.member.foto);
                 }
 
                 if (data.role === 'admin_space') {
@@ -220,6 +245,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userKey = uName ? `profile_override_user_${uName}` : null;
         const avatarKey = uName ? `member_avatar_override_${uName}` : null;
 
+        // 0. Unpack metadata (foto, alamat, telp) langsung dari MySQL backend
+        if (memberData && memberData.instansi && memberData.instansi.includes('|||')) {
+            const parts = memberData.instansi.split('|||');
+            memberData.instansi = parts[0];
+            try {
+                const extra = JSON.parse(parts[1]);
+                if (extra.foto) memberData.foto = extra.foto;
+                if (extra.alamat && !memberData.alamat) memberData.alamat = extra.alamat;
+                if (extra.telp && !memberData.telp) memberData.telp = extra.telp;
+            } catch (e) {}
+        }
+
+        let currentSpaceOwner = data.space_owner;
+        if (currentSpaceOwner && currentSpaceOwner.nama_pemilik && currentSpaceOwner.nama_pemilik.includes('|||')) {
+            const parts = currentSpaceOwner.nama_pemilik.split('|||');
+            currentSpaceOwner.nama_pemilik = parts[0];
+            try {
+                const extra = JSON.parse(parts[1]);
+                if (extra.foto) currentSpaceOwner.foto = extra.foto;
+                if (extra.alamat && !currentSpaceOwner.alamat) currentSpaceOwner.alamat = extra.alamat;
+                if (extra.deskripsi && !currentSpaceOwner.deskripsi) currentSpaceOwner.deskripsi = extra.deskripsi;
+            } catch (e) {}
+        }
+
         // 1. Ambil data profil & avatar tersimpan secara permanen dari server
         let serverProfile = null;
         if (uName) {
@@ -284,6 +333,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (typeof window !== 'undefined') {
+            if (avatarKey && memberData?.foto) {
+                localStorage.setItem(avatarKey, memberData.foto);
+            }
+            if (currentSpaceOwner?.foto && uName) {
+                localStorage.setItem(`admin_avatar_override_${uName}`, currentSpaceOwner.foto);
+            }
             window.dispatchEvent(new Event('member_avatar_updated'));
             window.dispatchEvent(new Event('profile_updated'));
         }
@@ -293,7 +348,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             username: data.username,
             role: data.role,
             member: memberData,
-            space_owner: data.space_owner,
+            space_owner: currentSpaceOwner,
         };
         setUser(userProfile);
 

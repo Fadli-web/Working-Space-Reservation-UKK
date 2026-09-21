@@ -101,6 +101,11 @@ export default function MemberProfilePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        if (!file.type.startsWith('image/')) {
+            setErrorMessage('Format file harus berupa gambar (JPG, PNG, WEBP)');
+            return;
+        }
+
         setUploadingPhoto(true);
         setErrorMessage('');
         setSuccessMessage('');
@@ -108,6 +113,9 @@ export default function MemberProfilePage() {
         try {
             const base64Data = await compressImage(file);
             if (!base64Data) throw new Error('Gagal memproses file foto.');
+
+            // Tampilkan preview instan
+            setForm((prev) => ({ ...prev, foto: base64Data }));
 
             let finalPhoto = base64Data;
 
@@ -118,13 +126,12 @@ export default function MemberProfilePage() {
                     const resolved = getPhotoUrl(uploadRes.url || uploadRes.filename);
                     if (resolved) {
                         finalPhoto = resolved;
+                        setForm((prev) => ({ ...prev, foto: finalPhoto }));
                     }
                 }
             } catch (uploadErr) {
                 console.warn('Upload API tidak merespons, foto disimpan menggunakan format lokal.');
             }
-
-            setForm((prev) => ({ ...prev, foto: finalPhoto }));
 
             // Simpan langsung ke state aplikasi & localStorage
             updateProfile({ foto: finalPhoto });
@@ -137,20 +144,19 @@ export default function MemberProfilePage() {
                 window.dispatchEvent(new Event('profile_updated'));
             }
 
-            // Simpan permanen ke server database & file store
-            try {
-                await authService.updateMemberProfile({
-                    nama_member: form.nama_member || user?.member?.nama_member || user?.username || '',
-                    instansi: form.instansi || user?.member?.instansi || '',
-                    telp: form.telp || user?.member?.telp || '',
-                    alamat: form.alamat || user?.member?.alamat || '',
-                    foto: finalPhoto,
-                });
-            } catch (syncErr) {
+            // Simpan permanen ke server database di background
+            authService.updateMemberProfile({
+                nama_member: form.nama_member || user?.member?.nama_member || user?.username || '',
+                instansi: form.instansi || user?.member?.instansi || '',
+                telp: form.telp || user?.member?.telp || '',
+                alamat: form.alamat || user?.member?.alamat || '',
+                foto: finalPhoto,
+            }).catch((syncErr) => {
                 console.warn('Sinkronisasi foto ke server:', syncErr);
-            }
+            });
 
-            alert('Foto profil berhasil diperbarui!');
+            setSuccessMessage('Foto profil berhasil diperbarui!');
+            setTimeout(() => setSuccessMessage(''), 4000);
         } catch (err: any) {
             setErrorMessage('Gagal memproses file foto.');
         } finally {
@@ -163,6 +169,7 @@ export default function MemberProfilePage() {
         e.preventDefault();
         setSaving(true);
         setErrorMessage('');
+        setSuccessMessage('');
 
         const payload = {
             nama_member: form.nama_member.trim(),
@@ -198,8 +205,11 @@ export default function MemberProfilePage() {
             }));
 
             setIsEditing(false);
-            alert('Profil member berhasil diperbarui!');
-            router.push('/member/spaces');
+            setSuccessMessage('Profil member berhasil diperbarui!');
+            setTimeout(() => {
+                setSuccessMessage('');
+                router.push('/member/spaces');
+            }, 1000);
         } catch (err: any) {
             console.error('Gagal menyimpan profil:', err);
             setErrorMessage(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan perubahan.');
@@ -318,6 +328,12 @@ export default function MemberProfilePage() {
                 {errorMessage && (
                     <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-rose-700">
                         {errorMessage}
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
+                        {successMessage}
                     </div>
                 )}
 
