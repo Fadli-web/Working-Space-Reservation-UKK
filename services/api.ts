@@ -17,7 +17,7 @@ api.interceptors.request.use((config) => {
         config.baseURL = '';
     }
 
-    const makerKey = process.env.NEXT_PUBLIC_MAKER_KEY?.trim();
+    const makerKey = (process.env.NEXT_PUBLIC_MAKER_KEY || 'mk_bcfeead51c4a4395a643b3ed506ba933').trim();
     if (makerKey) {
         config.headers['x-maker-key'] = makerKey;
     }
