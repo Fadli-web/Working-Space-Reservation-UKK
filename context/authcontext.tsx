@@ -2,8 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile, MemberData } from '@/types/auth';
+import { UserProfile, MemberData, SpaceOwnerData } from '@/types/auth';
 import { authService } from '@/services/auth.services';
+import api from '@/services/api';
 
 interface AuthContextType {
     user: UserProfile | null;
@@ -58,10 +59,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     const savedOverrides = userKey ? localStorage.getItem(userKey) : null;
                     const savedAvatar = avatarKey ? localStorage.getItem(avatarKey) : null;
                     // Clean up packed data dari nama_pemilik atau instansi
-                    if (data.space_owner?.nama_pemilik?.includes('|||')) {
+                    if (data.space_owner && data.space_owner.nama_pemilik && data.space_owner.nama_pemilik.includes('|||')) {
                         data.space_owner.nama_pemilik = data.space_owner.nama_pemilik.split('|||')[0];
                     }
-                    if (data.member?.instansi?.includes('|||')) {
+                    if (data.member && data.member.instansi && data.member.instansi.includes('|||')) {
                         data.member.instansi = data.member.instansi.split('|||')[0];
                     }
 
@@ -101,12 +102,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     try {
                         const adminProfRes = await api.get('/api/admin/profile');
                         if (adminProfRes.data?.data) {
-                            data.space_owner = {
-                                ...data.space_owner,
+                            const updatedSpaceOwner: SpaceOwnerData = {
+                                ...(data.space_owner || {
+                                    id: data.id,
+                                    nama_coworking: '',
+                                    nama_pemilik: data.username,
+                                    telp: '',
+                                }),
                                 ...adminProfRes.data.data
                             };
-                            if (avatarKey && data.space_owner.foto) {
-                                localStorage.setItem(`admin_avatar_override_${uName}`, data.space_owner.foto);
+                            data.space_owner = updatedSpaceOwner;
+                            if (avatarKey && updatedSpaceOwner.foto) {
+                                localStorage.setItem(`admin_avatar_override_${uName}`, updatedSpaceOwner.foto);
                             }
                         }
                     } catch (e) {
