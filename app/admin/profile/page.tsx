@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/authcontext';
 import api from '@/services/api';
 import Navbar from '@/components/Navbar';
+import { authService, getPhotoUrl } from '@/services/auth.services';
 
 export default function AdminProfilePage() {
     const router = useRouter();
@@ -23,24 +24,25 @@ export default function AdminProfilePage() {
     const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Fetch Profil Coworking Space (GET /api/admin/profile)
-    const fetchProfile = async () => {
+    const loadData = async () => {
         setLoading(true);
         try {
             const res = await api.get('/api/admin/profile');
-            if (res.data?.data) {
-                const data = res.data.data;
+            const data = res.data?.data;
+            if (data) {
                 setForm({
                     nama_coworking: data.nama_coworking || '',
                     nama_pemilik: data.nama_pemilik || '',
                     telp: data.telp || '',
-                    alamat: data.alamat || localStorage.getItem('admin_space_alamat') || 'Jl. Danau Ranau, Sawojajar, Kedungkandang, Kota Malang',
-                    deskripsi: data.deskripsi || localStorage.getItem('admin_space_deskripsi') || 'Coworking space modern dengan internet berkecepatan tinggi, meja kerja ergonomis, meeting room kedap suara, dan pantry lengkap.',
+                    alamat: data.alamat || '',
+                    deskripsi: data.deskripsi || '',
                 });
                 if (data.foto) {
-                    setPhotoPreview(data.foto);
+                    setPhotoPreview(getPhotoUrl(data.foto));
                 }
             }
         } catch (error) {
@@ -62,7 +64,7 @@ export default function AdminProfilePage() {
 
     useEffect(() => {
         if (user?.role === 'admin_space') {
-            fetchProfile();
+            loadData();
         }
         if (user?.username && typeof window !== 'undefined') {
             const savedAvatar = localStorage.getItem(`admin_avatar_override_${user.username.toLowerCase()}`);
@@ -72,7 +74,7 @@ export default function AdminProfilePage() {
         }
     }, [user]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -85,16 +87,43 @@ export default function AdminProfilePage() {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const result = reader.result as string;
-            setPhotoPreview(result);
+        setIsUploadingPhoto(true);
+        setStatusMsg(null);
+        try {
+            // Langsung unggah foto ke backend
+            const uploadRes = await authService.uploadMemberPhoto(file);
+            let finalPhoto = null;
+            if (uploadRes?.filename || uploadRes?.url) {
+                const resolved = getPhotoUrl(uploadRes.url || uploadRes.filename);
+                if (resolved) finalPhoto = resolved;
+            }
+
+            if (!finalPhoto) {
+                // Fallback ke Base64 jika upload backend gagal mengembalikan URL
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const result = reader.result as string;
+                    setPhotoPreview(result);
+                    if (user?.username && typeof window !== 'undefined') {
+                        localStorage.setItem(`admin_avatar_override_${user.username.toLowerCase()}`, result);
+                        window.dispatchEvent(new Event('admin_avatar_updated'));
+                    }
+                };
+                reader.readAsDataURL(file);
+                return;
+            }
+
+            setPhotoPreview(finalPhoto);
             if (user?.username && typeof window !== 'undefined') {
-                localStorage.setItem(`admin_avatar_override_${user.username.toLowerCase()}`, result);
+                localStorage.setItem(`admin_avatar_override_${user.username.toLowerCase()}`, finalPhoto);
                 window.dispatchEvent(new Event('admin_avatar_updated'));
             }
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            console.warn('Gagal upload foto:', err);
+            setStatusMsg({ type: 'error', text: 'Gagal mengunggah foto ke server' });
+        } finally {
+            setIsUploadingPhoto(false);
+        }
     };
 
     const handleRemovePhoto = () => {

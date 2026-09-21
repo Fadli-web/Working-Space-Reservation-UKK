@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // Fallback jika server belum memiliki catatan: gunakan cache lokal
                     const savedOverrides = userKey ? localStorage.getItem(userKey) : null;
                     const savedAvatar = avatarKey ? localStorage.getItem(avatarKey) : null;
+                    // Clean up packed data dari nama_pemilik atau instansi
+                    if (data.space_owner?.nama_pemilik?.includes('|||')) {
+                        data.space_owner.nama_pemilik = data.space_owner.nama_pemilik.split('|||')[0];
+                    }
+                    if (data.member?.instansi?.includes('|||')) {
+                        data.member.instansi = data.member.instansi.split('|||')[0];
+                    }
 
                     if (savedOverrides) {
                         try {

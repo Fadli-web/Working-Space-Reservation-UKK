@@ -75,20 +75,32 @@ export async function GET(req: NextRequest) {
             const token = authHeader.replace('Bearer ', '').trim();
             try {
                 const profileRes = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
-                    headers: {
-                        'x-maker-key': MAKER_KEY,
-                        'Authorization': `Bearer ${token}`,
-                    },
+                    headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
                 });
                 const user = profileRes.data?.data;
                 if (user?.username) {
                     const uName = user.username.toLowerCase();
-                    if (store[uName]) {
-                        return NextResponse.json({
-                            status: true,
-                            data: store[uName],
-                        });
+                    
+                    let extraData = {};
+                    let rawInstansi = user.member?.instansi || '';
+                    if (rawInstansi.includes('|||')) {
+                        const parts = rawInstansi.split('|||');
+                        if (user.member) user.member.instansi = parts[0];
+                        try {
+                            if (parts[1]) extraData = JSON.parse(parts[1]);
+                        } catch(e) {}
+                    } else if (store[uName]) {
+                        extraData = store[uName];
                     }
+
+                    return NextResponse.json({
+                        status: true,
+                        data: {
+                            ...user.member,
+                            ...user,
+                            ...extraData,
+                        },
+                    });
                 }
             } catch {
                 // Abaikan jika token gagal diverifikasi
@@ -164,19 +176,37 @@ async function handleUpdate(req: NextRequest) {
                 const adminToken = adminLoginRes.data?.data?.access_token;
 
                 if (adminToken) {
+                    // Ambil instansi lama untuk mendapatkan ekstra data jika ada
+                    let existingExtra = {};
+                    const oldRaw = userData.member?.instansi || '';
+                    if (oldRaw.includes('|||')) {
+                        const parts = oldRaw.split('|||');
+                        if (parts[1]) {
+                            try { existingExtra = JSON.parse(parts[1]); } catch(e) {}
+                        }
+                    }
+
+                    const newExtra = {
+                        ...existingExtra,
+                        foto: foto !== undefined ? foto : (existingExtra as any).foto,
+                    };
+                    const extraStr = JSON.stringify(newExtra);
+                    
+                    let baseInstansi = instansi !== undefined ? instansi : (oldRaw.includes('|||') ? oldRaw.split('|||')[0] : oldRaw);
+                    if (!baseInstansi || baseInstansi === '-') baseInstansi = 'Member';
+                    
+                    const packedInstansi = `${baseInstansi}|||${extraStr}`;
+
                     await axios.put(
                         `${API_BASE_URL}/api/admin/members/${targetMemberId}`,
                         {
                             nama_member: nama_member || userData.member?.nama_member || userData.username,
-                            instansi: instansi !== undefined ? instansi : (userData.member?.instansi || '-'),
+                            instansi: packedInstansi,
                             telp: telp !== undefined ? telp : (userData.member?.telp || '-'),
                             alamat: alamat !== undefined ? alamat : (userData.member?.alamat || '-'),
                         },
                         {
-                            headers: {
-                                'x-maker-key': MAKER_KEY,
-                                'Authorization': `Bearer ${adminToken}`,
-                            },
+                            headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${adminToken}` },
                         }
                     );
                 }

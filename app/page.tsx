@@ -552,30 +552,11 @@ export default function HomePage() {
             {/* Middle Benefit Texts */}
             <div className="flex-1 space-y-3 text-center lg:text-left">
               <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#1E211A]">
-                Bergabung dengan SmartSpace Club
+                Reservasi Sekarang untuk melihat room spaces lebih lengkap
               </h3>
               <p className="text-xs sm:text-sm text-[#555A4C] leading-relaxed max-w-xl">
-                Dapatkan diskon otomatis 20% setiap reservasi, prioritas booking ruang meeting, cashback point, dan akses fasilitas workstation lengkap.
+                Nikmati kemudahan akses reservasi, booking, checkin dan checkout lebih mudah
               </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <div className="text-left">
-                  <span className="text-xs font-black text-[#2D3328] block">Diskon 20%</span>
-                  <span className="text-[10px] text-neutral-500">Otomatis tiap booking</span>
-                </div>
-                <div className="text-left">
-                  <span className="text-xs font-black text-[#2D3328] block">Prioritas</span>
-                  <span className="text-[10px] text-neutral-500">Reservasi meja favorit</span>
-                </div>
-                <div className="text-left">
-                  <span className="text-xs font-black text-[#2D3328] block">Free Drink</span>
-                  <span className="text-[10px] text-neutral-500">Spesial menu barista</span>
-                </div>
-                <div className="text-left">
-                  <span className="text-xs font-black text-[#2D3328] block">E-Pass</span>
-                  <span className="text-[10px] text-neutral-500">Check-in tanpa antre</span>
-                </div>
-              </div>
             </div>
 
             {/* Action Button */}

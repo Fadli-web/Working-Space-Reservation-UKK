@@ -68,9 +68,20 @@ export async function GET(req: NextRequest) {
         const uName = userData?.username?.toLowerCase()?.trim();
 
         let extraData = {};
-        if (uName) {
-            const store = getProfilesStore();
-            extraData = store[uName] || {};
+        let rawNamaPemilik = backendData.nama_pemilik || '';
+        
+        if (rawNamaPemilik.includes('|||')) {
+            const parts = rawNamaPemilik.split('|||');
+            backendData.nama_pemilik = parts[0];
+            try {
+                if (parts[1]) extraData = JSON.parse(parts[1]);
+            } catch(e) {}
+        } else {
+            // Fallback ke local file jika belum pakai format baru (saat transisi)
+            if (uName) {
+                const store = getProfilesStore();
+                extraData = store[uName] || {};
+            }
         }
 
         return NextResponse.json({
@@ -99,46 +110,60 @@ export async function PUT(req: NextRequest) {
 
         const body = await req.json();
         
-        // 1. Dapatkan profil pemanggil untuk username
+        // 1. Dapatkan profil pemanggil
         const profileRes = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
-            headers: {
-                'x-maker-key': MAKER_KEY,
-                'Authorization': `Bearer ${token}`,
-            },
+            headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
         });
         const userData = profileRes.data?.data;
         if (!userData || userData.role !== 'admin_space') {
             return NextResponse.json({ status: false, message: 'Akses ditolak.' }, { status: 403 });
         }
-        const uName = userData.username?.toLowerCase()?.trim();
 
-        // 2. Kirim update ke backend asli (hanya field yang didukung)
+        // Ambil extra data yang sudah ada (supaya kalau ada field yg kosong, kita pakai nilai lama)
+        let existingExtra = {};
+        try {
+            const getOld = await axios.get(`${API_BASE_URL}/api/admin/profile`, {
+                headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
+            });
+            const oldRaw = getOld.data?.data?.nama_pemilik || '';
+            if (oldRaw.includes('|||')) {
+                const parts = oldRaw.split('|||');
+                if (parts[1]) existingExtra = JSON.parse(parts[1]);
+            }
+        } catch(e) {}
+
+        const newExtra = {
+            ...existingExtra,
+            alamat: body.alamat !== undefined ? body.alamat : (existingExtra as any).alamat,
+            deskripsi: body.deskripsi !== undefined ? body.deskripsi : (existingExtra as any).deskripsi,
+            foto: body.foto !== undefined ? body.foto : (existingExtra as any).foto,
+            updated_at: new Date().toISOString(),
+        };
+
+        const extraStr = JSON.stringify(newExtra);
+        // Pack ke nama_pemilik
+        const packedNamaPemilik = `${body.nama_pemilik.trim()}|||${extraStr}`;
+
+        // 2. Kirim update ke backend asli
         const backendPayload = {
             nama_coworking: body.nama_coworking,
-            nama_pemilik: body.nama_pemilik,
+            nama_pemilik: packedNamaPemilik,
             telp: body.telp,
         };
         
         const res = await axios.put(`${API_BASE_URL}/api/admin/profile`, backendPayload, {
-            headers: {
-                'x-maker-key': MAKER_KEY,
-                'Authorization': `Bearer ${token}`,
-            },
+            headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
         });
 
-        // 3. Simpan extra fields secara lokal
-        if (uName) {
-            const store = getProfilesStore();
-            const existing = store[uName] || {};
-            store[uName] = {
-                ...existing,
-                alamat: body.alamat !== undefined ? body.alamat : existing.alamat,
-                deskripsi: body.deskripsi !== undefined ? body.deskripsi : existing.deskripsi,
-                foto: body.foto !== undefined ? body.foto : existing.foto,
-                updated_at: new Date().toISOString(),
-            };
-            saveProfilesStore(store);
-        }
+        // 3. Simpan extra fields ke fallback local json untuk local dev (opsional tapi baiknya tetap ada)
+        try {
+            const uName = userData.username?.toLowerCase()?.trim();
+            if (uName) {
+                const store = getProfilesStore();
+                store[uName] = newExtra;
+                saveProfilesStore(store);
+            }
+        } catch(e) {}
 
         return NextResponse.json({
             status: true,
