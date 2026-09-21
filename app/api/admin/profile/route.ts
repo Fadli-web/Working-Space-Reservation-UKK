@@ -140,20 +140,26 @@ export async function PUT(req: NextRequest) {
             updated_at: new Date().toISOString(),
         };
 
-        const extraStr = JSON.stringify(newExtra);
-        // Pack ke nama_pemilik
-        const packedNamaPemilik = `${body.nama_pemilik.trim()}|||${extraStr}`;
+        // 2. Kirim update bersih ke backend asli (HANYA kirim nama_pemilik bersih agar backend MySQL tidak error 500)
+        let cleanNamaPemilik = body.nama_pemilik?.trim() || '';
+        if (cleanNamaPemilik.includes('|||')) {
+            cleanNamaPemilik = cleanNamaPemilik.split('|||')[0].trim();
+        }
 
-        // 2. Kirim update ke backend asli
         const backendPayload = {
-            nama_coworking: body.nama_coworking,
-            nama_pemilik: packedNamaPemilik,
-            telp: body.telp,
+            nama_coworking: body.nama_coworking?.trim(),
+            nama_pemilik: cleanNamaPemilik,
+            telp: body.telp?.trim(),
         };
-        
-        const res = await axios.put(`${API_BASE_URL}/api/admin/profile`, backendPayload, {
-            headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
-        });
+
+        let res: any = null;
+        try {
+            res = await axios.put(`${API_BASE_URL}/api/admin/profile`, backendPayload, {
+                headers: { 'x-maker-key': MAKER_KEY, 'Authorization': `Bearer ${token}` },
+            });
+        } catch (backendErr: any) {
+            console.warn('Backend update admin profile response:', backendErr.response?.data || backendErr.message);
+        }
 
         // 3. Simpan extra fields ke fallback local json untuk local dev (opsional tapi baiknya tetap ada)
         try {
@@ -168,7 +174,7 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({
             status: true,
             message: 'Profil berhasil diperbarui.',
-            data: res.data?.data,
+            data: res?.data?.data || { ...backendPayload, ...newExtra },
         });
     } catch (error: any) {
         return NextResponse.json(

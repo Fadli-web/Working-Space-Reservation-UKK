@@ -219,14 +219,16 @@ async function handleUpdate(req: NextRequest) {
                     
                     let baseInstansi = instansi !== undefined ? instansi : (oldRaw.includes('|||') ? oldRaw.split('|||')[0] : oldRaw);
                     if (!baseInstansi || baseInstansi === '-') baseInstansi = 'Member';
-                    
-                    const packedInstansi = `${baseInstansi}|||${extraStr}`;
+                    let cleanInstansi = baseInstansi.trim();
+                    if (cleanInstansi.includes('|||')) {
+                        cleanInstansi = cleanInstansi.split('|||')[0].trim();
+                    }
 
                     await axios.put(
                         `${API_BASE_URL}/api/admin/members/${targetMemberId}`,
                         {
                             nama_member: nama_member || userData.member?.nama_member || userData.username,
-                            instansi: packedInstansi,
+                            instansi: cleanInstansi,
                             telp: telp !== undefined ? telp : (userData.member?.telp || '-'),
                             alamat: alamat !== undefined ? alamat : (userData.member?.alamat || '-'),
                         },

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { QRCodeSVG } from 'qrcode.react';
 import api from '@/services/api';
+import { cleanMetadataText } from '@/services/auth.services';
 
 export default function ETicketPage() {
   const router = useRouter();
@@ -243,7 +244,7 @@ export default function ETicketPage() {
                 {ticket.member?.nama || ticket.member?.nama_member || '-'}
               </p>
               <p className="text-xs font-semibold text-[#6E745F]">
-                {ticket.member?.instansi || '-'}
+                {cleanMetadataText(ticket.member?.instansi) || '-'}
               </p>
             </div>
           </div>

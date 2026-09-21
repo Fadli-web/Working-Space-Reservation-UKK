@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/authcontext';
 import api from '@/services/api';
-import { authService, getPhotoUrl } from '@/services/auth.services';
+import { authService, getPhotoUrl, cleanMetadataText } from '@/services/auth.services';
 import Navbar from '@/components/Navbar';
 
 export default function MemberProfilePage() {
@@ -13,7 +13,6 @@ export default function MemberProfilePage() {
     const { user, loading, logout, updateProfile } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -40,21 +39,21 @@ export default function MemberProfilePage() {
     });
 
     useEffect(() => {
-        if (user?.member && !isEditing) {
+        if (user?.member) {
             const cachedAvatar =
                 (typeof window !== 'undefined' && user.username
                     ? localStorage.getItem(`member_avatar_override_${user.username.toLowerCase()}`)
                     : null) || user.member.foto || '';
 
             setForm({
-                nama_member: user.member.nama_member || user.username || '',
-                instansi: user.member.instansi || '',
+                nama_member: cleanMetadataText(user.member.nama_member) || user.username || '',
+                instansi: cleanMetadataText(user.member.instansi) || '',
                 telp: user.member.telp || '',
                 alamat: user.member.alamat || '',
                 foto: cachedAvatar,
             });
         }
-    }, [user, isEditing]);
+    }, [user]);
 
     const compressImage = (file: File): Promise<string> => {
         return new Promise((resolve) => {
@@ -204,12 +203,10 @@ export default function MemberProfilePage() {
                 foto: payload.foto || prev.foto,
             }));
 
-            setIsEditing(false);
             setSuccessMessage('Profil member berhasil diperbarui!');
             setTimeout(() => {
                 setSuccessMessage('');
-                router.push('/member/spaces');
-            }, 1000);
+            }, 3000);
         } catch (err: any) {
             console.error('Gagal menyimpan profil:', err);
             setErrorMessage(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan perubahan.');
@@ -218,7 +215,7 @@ export default function MemberProfilePage() {
         }
     };
 
-    const handleCancel = () => {
+    const handleReset = () => {
         if (user?.member) {
             const cachedAvatar =
                 (typeof window !== 'undefined' && user.username
@@ -226,15 +223,14 @@ export default function MemberProfilePage() {
                     : null) || user.member.foto || '';
 
             setForm({
-                nama_member: user.member.nama_member || user.username || '',
-                instansi: user.member.instansi || '',
+                nama_member: cleanMetadataText(user.member.nama_member) || user.username || '',
+                instansi: cleanMetadataText(user.member.instansi) || '',
                 telp: user.member.telp || '',
                 alamat: user.member.alamat || '',
                 foto: cachedAvatar,
             });
         }
         setErrorMessage('');
-        setIsEditing(false);
     };
 
     const handleChangePassword = async (e: React.FormEvent) => {
@@ -385,7 +381,7 @@ export default function MemberProfilePage() {
                                     </span>
                                 </div>
                                 <p className="text-xs font-semibold text-[#6E745F] mt-1">
-                                    @{user.username} • {user.member?.instansi || form.instansi || 'Member Terdaftar'}
+                                    @{user.username} • {cleanMetadataText(user.member?.instansi) || form.instansi || 'Member Terdaftar'}
                                 </p>
                             </div>
                         </div>
@@ -395,153 +391,95 @@ export default function MemberProfilePage() {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploadingPhoto}
-                                className="px-4 py-2.5 bg-[#F0F1ED] text-[#2D3328] text-[10px] font-bold uppercase tracking-wider rounded-full hover:bg-[#D5D8CF] transition cursor-pointer"
+                                className="px-5 py-2.5 bg-[#F0F1ED] text-[#2D3328] text-[10px] font-bold uppercase tracking-wider rounded-full hover:bg-[#D5D8CF] transition cursor-pointer"
                             >
                                 {uploadingPhoto ? 'Mengunggah...' : 'Unggah Foto'}
                             </button>
-                            {!isEditing && (
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditing(true)}
-                                    className="px-5 py-2.5 border border-[#D5D8CF] text-[11px] font-bold uppercase tracking-widest rounded-full hover:bg-[#2D3328] hover:text-white transition cursor-pointer"
-                                >
-                                    EDIT PROFIL
-                                </button>
-                            )}
                         </div>
                     </div>
 
-                    {isEditing ? (
-                        <form onSubmit={handleSaveProfile} className="pt-8 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
-                                        NAMA LENGKAP
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={form.nama_member}
-                                        onChange={(e) => setForm({ ...form, nama_member: e.target.value })}
-                                        className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
-                                        INSTANSI / ORGANISASI
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={form.instansi}
-                                        onChange={(e) => setForm({ ...form, instansi: e.target.value })}
-                                        className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
-                                        NOMOR TELEPON
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        required
-                                        value={form.telp}
-                                        onChange={(e) => setForm({ ...form, telp: e.target.value })}
-                                        className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
-                                        ALAMAT DOMISILI
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={form.alamat}
-                                        onChange={(e) => setForm({ ...form, alamat: e.target.value })}
-                                        className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
-                                    />
-                                </div>
+                    <form onSubmit={handleSaveProfile} className="pt-8 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
+                                    NAMA LENGKAP
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={form.nama_member}
+                                    onChange={(e) => setForm({ ...form, nama_member: e.target.value })}
+                                    className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3.5 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
+                                />
                             </div>
 
-                            <div className="pt-6 flex items-center justify-end gap-3 border-t border-[#F0F1ED]">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
+                                    INSTANSI / ORGANISASI
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={form.instansi}
+                                    onChange={(e) => setForm({ ...form, instansi: e.target.value })}
+                                    className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3.5 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
+                                    NOMOR TELEPON
+                                </label>
+                                <input
+                                    type="tel"
+                                    required
+                                    value={form.telp}
+                                    onChange={(e) => setForm({ ...form, telp: e.target.value })}
+                                    className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3.5 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#6E745F] mb-2">
+                                    ALAMAT DOMISILI
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={form.alamat}
+                                    onChange={(e) => setForm({ ...form, alamat: e.target.value })}
+                                    className="w-full bg-[#FBFBF9] border border-[#D5D8CF] rounded-xl px-4 py-3.5 text-xs font-bold text-[#2D3328] outline-none focus:border-[#2D3328] transition"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#F0F1ED]">
+                            <button
+                                type="button"
+                                onClick={logout}
+                                className="w-full sm:w-auto px-6 py-3 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-widest hover:bg-red-100 transition cursor-pointer"
+                            >
+                                KELUAR AKUN
+                            </button>
+
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                                 <button
                                     type="button"
-                                    onClick={handleCancel}
-                                    disabled={saving}
-                                    className="px-6 py-3 border border-[#D5D8CF] text-[10px] font-bold uppercase tracking-widest rounded-full text-[#6E745F] hover:bg-[#F0F1ED] transition cursor-pointer"
+                                    onClick={() => setShowPasswordSection(!showPasswordSection)}
+                                    className="w-full sm:w-auto px-6 py-3 rounded-full border border-[#D5D8CF] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F0F1ED] transition text-center cursor-pointer"
                                 >
-                                    BATAL
+                                    {showPasswordSection ? 'TUTUP PENGATURAN SANDI' : 'UBAH KATA SANDI'}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving || uploadingPhoto}
-                                    className="px-8 py-3 bg-[#2D3328] text-white text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-black transition disabled:opacity-50 cursor-pointer"
+                                    className="w-full sm:w-auto px-8 py-3.5 bg-[#2D3328] text-white text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-black transition active:scale-95 disabled:opacity-50 text-center cursor-pointer shadow-sm"
                                 >
                                     {saving ? 'MENYIMPAN...' : 'SIMPAN PERUBAHAN'}
                                 </button>
                             </div>
-                        </form>
-                    ) : (
-                        <div className="pt-8 space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-[#F8F9F7] p-5 rounded-2xl border border-[#F0F1ED]">
-                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-[#8F9485] mb-1">
-                                        INSTANSI / ORGANISASI
-                                    </span>
-                                    <p className="text-sm font-black uppercase text-[#2D3328]">
-                                        {user.member?.instansi || form.instansi || '-'}
-                                    </p>
-                                </div>
-
-                                <div className="bg-[#F8F9F7] p-5 rounded-2xl border border-[#F0F1ED]">
-                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-[#8F9485] mb-1">
-                                        NOMOR TELEPON
-                                    </span>
-                                    <p className="text-sm font-black text-[#2D3328]">
-                                        {user.member?.telp || form.telp || '-'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="bg-[#F8F9F7] p-5 rounded-2xl border border-[#F0F1ED]">
-                                <span className="block text-[9px] font-bold uppercase tracking-widest text-[#8F9485] mb-1">
-                                    ALAMAT DOMISILI
-                                </span>
-                                <p className="text-sm font-black uppercase text-[#2D3328]">
-                                    {user.member?.alamat || form.alamat || '-'}
-                                </p>
-                            </div>
-
-                            <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#F0F1ED]">
-                                <button
-                                    onClick={logout}
-                                    className="w-full sm:w-auto px-6 py-3 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-widest hover:bg-red-100 transition cursor-pointer"
-                                >
-                                    KELUAR AKUN
-                                </button>
-
-                                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPasswordSection(!showPasswordSection)}
-                                        className="w-full sm:w-auto px-6 py-3 rounded-full border border-[#D5D8CF] text-[10px] font-bold uppercase tracking-widest hover:bg-[#F0F1ED] transition text-center cursor-pointer"
-                                    >
-                                        {showPasswordSection ? 'TUTUP PENGATURAN SANDI' : 'UBAH KATA SANDI'}
-                                    </button>
-                                    <Link
-                                        href="/member/spaces"
-                                        className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#2D3328] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-black transition text-center cursor-pointer"
-                                    >
-                                        PESAN RUANGAN SEKARANG
-                                    </Link>
-                                </div>
-                            </div>
                         </div>
-                    )}
+                    </form>
                 </div>
 
                 {/* --- KARTU UBAH KATA SANDI MEMBER --- */}

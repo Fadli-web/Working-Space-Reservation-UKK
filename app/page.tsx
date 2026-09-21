@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import api from '@/services/api';
 
 export default function HomePage() {
   const router = useRouter();
@@ -43,79 +44,162 @@ export default function HomePage() {
     }
   };
 
-  // Spaces Catalog Data
-  const spaces = [
+  // Helper resolusi URL foto ruangan dari backend API
+  const getSpacePhotoUrl = (space: any) => {
+    const rawFoto = space.foto;
+    const rawUrl = space.foto_url;
+    const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://learn.smktelkom-mlg.sch.id/coworking').replace(/\/$/, '');
+
+    if (rawFoto) {
+      if (rawFoto.startsWith('http://') || rawFoto.startsWith('https://') || rawFoto.startsWith('data:')) {
+        return rawFoto;
+      }
+      return `${baseUrl}/uploads/spaces/${rawFoto}`;
+    }
+
+    if (rawUrl) {
+      if (rawUrl.includes('/uploads/spaces/')) {
+        const filename = rawUrl.split('/uploads/spaces/').pop();
+        return `${baseUrl}/uploads/spaces/${filename}`;
+      }
+      if (rawUrl.startsWith('http://')) {
+        return rawUrl.replace('http://', 'https://');
+      }
+      return rawUrl;
+    }
+
+    if (space.tipe === 'private_office' || space.type === 'private_office') {
+      return 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80';
+    }
+    if (space.tipe === 'meeting_room' || space.type === 'meeting_room') {
+      return 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=800&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80';
+  };
+
+  // Data Ruangan App Maker 93 (PT INDAH PROPERTY & SmartSpace Faddli Hub)
+  const defaultMaker93Spaces = [
     {
-      id: '1',
-      code: 'LIDAP-01',
-      title: 'Meeting Room - LIDAP Workspace',
+      id: '484',
+      code: 'INDAH-484',
+      title: 'Personal Desk',
+      type: 'desk',
+      typeLabel: 'Personal Desk',
+      rating: 4.9,
+      reviews: 28,
+      capacity: '1 Orang',
+      price: 15000,
+      badge: 'HEMAT',
+      image: 'https://learn.smktelkom-mlg.sch.id/coworking/uploads/spaces/1789955174992-819264544.jpg',
+      description: 'Meja dan kursi ergonomis standar personal, stopkontak colokan listrik pribadi, Wi-Fi kecepatan tinggi, AC dingin, dan free refill air/kopi.',
+    },
+    {
+      id: '483',
+      code: 'INDAH-483',
+      title: 'Meeting Room Open Resevation Malang City',
       type: 'meeting_room',
       typeLabel: 'Meeting Room',
       rating: 4.9,
-      reviews: 48,
-      capacity: '15 Orang',
-      price: 25000,
+      reviews: 42,
+      capacity: '30 Orang',
+      price: 140000,
       badge: 'POPULER',
-      image: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=700&q=80',
-      description: 'Ruang rapat kedap suara lengkap dengan WiFi kencang, stopkontak pribadi, dan layar presentasi.',
+      image: 'https://learn.smktelkom-mlg.sch.id/coworking/uploads/spaces/1789955142804-699076390.jpg',
+      description: 'Ruang meeting kapasitas 30 orang dengan meja konferensi, Smart TV / proyektor, video conference, whiteboard, dan dinding peredam suara.',
     },
     {
-      id: '2',
-      code: 'MOKLET-01',
-      title: 'PUNTADEWA - Moklet Hub Coworking',
-      type: 'private_office',
-      typeLabel: 'Private Office',
+      id: '482',
+      code: 'INDAH-482',
+      title: 'Meeting Room Luxury Malang',
+      type: 'meeting_room',
+      typeLabel: 'Meeting Room',
       rating: 4.9,
-      reviews: 32,
-      capacity: '12313 Orang',
-      price: 1231232,
-      badge: 'TERLARIS',
-      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80',
-      description: 'Ruang kerja privat modern dengan teknologi smart space dan fasilitas lengkap.',
+      reviews: 35,
+      capacity: '20 Orang',
+      price: 250000,
+      badge: 'PREMIUM',
+      image: 'https://learn.smktelkom-mlg.sch.id/coworking/uploads/spaces/1789955119903-417077.jpg',
+      description: 'Set meja rapat eksekutif mewah, layar display resolusi tinggi, video conference hybrid, stopkontak terintegrasi, dan layanan konsumsi.',
     },
     {
-      id: '3',
-      code: 'MOKLET-02',
-      title: 'PUNTADEWA - Moklet Hub Coworking',
+      id: '481',
+      code: 'INDAH-481',
+      title: 'Meeting Room',
+      type: 'meeting_room',
+      typeLabel: 'Meeting Room',
+      rating: 4.8,
+      reviews: 21,
+      capacity: '15 Orang',
+      price: 150000,
+      badge: 'TERLARIS',
+      image: 'https://learn.smktelkom-mlg.sch.id/coworking/uploads/spaces/1789955128458-499218874.jpg',
+      description: 'Ruang meeting formal 15 orang, Wi-Fi dedicated tanpa lag, AC dingin mandiri, proyektor, serta fasilitas pantry dan kopi gratis.',
+    },
+    {
+      id: '472',
+      code: 'SMART-472',
+      title: 'Private Office Suite (Edited)',
       type: 'private_office',
       typeLabel: 'Private Office',
       rating: 4.8,
-      reviews: 21,
-      capacity: '50 Orang',
-      price: 500,
+      reviews: 16,
+      capacity: '6 Orang',
+      price: 120000,
       badge: 'BARU',
-      image: 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=700&q=80',
-      description: 'Tempat meeting kapasitas besar dengan perlengkapan rapat dan presentasi lengkap.',
-    },
-    {
-      id: '4',
-      code: 'LIDAP-02',
-      title: 'Personal Focus Desk - LIDAP Workspace',
-      type: 'desk',
-      typeLabel: 'Personal Desk',
-      rating: 4.7,
-      reviews: 19,
-      capacity: '1 Orang',
-      price: 20000,
-      badge: 'HEMAT',
-      image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=700&q=80',
-      description: 'Bilik pod kedap suara untuk sepasang rekan kerja atau podcast & call tanpa gangguan.',
-    },
-    {
-      id: '5',
-      code: 'MOKLET-03',
-      title: 'Agora Townhall & Event Hall',
-      type: 'event_space',
-      typeLabel: 'Event Space',
-      rating: 4.9,
-      reviews: 54,
-      capacity: '40 Orang',
-      price: 450000,
-      badge: 'PREMIUM',
-      image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80',
-      description: 'Aula serbaguna dengan panggung proyektor 4K dan sound system untuk workshop & meetup.',
+      image: 'https://learn.smktelkom-mlg.sch.id/coworking/uploads/spaces/1789954653349-57890293.jpg',
+      description: 'Studio kantor privat modern eksklusif dengan privasi penuh, smart lock, dan fasilitas lengkap untuk tim kecil.',
     },
   ];
+
+  const [spaces, setSpaces] = useState<any[]>(defaultMaker93Spaces);
+
+  // Ambil data live database App Maker 93 via API
+  useEffect(() => {
+    const fetchSpaces = async () => {
+      try {
+        const res = await api.get('/api/spaces');
+        const apiData = res.data?.data;
+        if (Array.isArray(apiData) && apiData.length > 0) {
+          const badges = ['POPULER', 'TERLARIS', 'PREMIUM', 'HEMAT', 'BARU'];
+          const mapped = apiData.map((item: any, idx: number) => {
+            const orgName = item.owner?.nama_coworking || 'SPACE';
+            const shortCode = orgName.includes('INDAH')
+              ? 'INDAH'
+              : orgName.includes('SmartSpace')
+              ? 'SMART'
+              : 'SPACE';
+
+            return {
+              id: String(item.id),
+              code: `${shortCode}-${item.id}`,
+              title: item.nama_space,
+              type: item.tipe,
+              typeLabel:
+                item.tipe === 'desk'
+                  ? 'Personal Desk'
+                  : item.tipe === 'meeting_room'
+                  ? 'Meeting Room'
+                  : 'Private Office',
+              rating: 4.8 + ((idx % 3) * 0.05),
+              reviews: 20 + (idx * 6),
+              capacity: `${item.kapasitas} Orang`,
+              price: Number(item.harga_per_jam) || 0,
+              badge: badges[idx % badges.length],
+              image: getSpacePhotoUrl(item),
+              description:
+                item.deskripsi ||
+                'Fasilitas ruang kerja estetik lengkap dengan koneksi internet cepat dan suasana nyaman.',
+            };
+          });
+          setSpaces(mapped);
+        }
+      } catch (err) {
+        console.warn('Menggunakan data default App Maker 93:', err);
+      }
+    };
+
+    fetchSpaces();
+  }, []);
 
   const filteredSpaces = spaces.filter((item) => {
     const matchType = selectedCategory === 'all' || item.type === selectedCategory;
@@ -493,13 +577,22 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
 
             {/* Image Mascot di sebelah kiri untuk masuk melihat reservasi lebih lanjut */}
-
-            <img
-              src="/mascot1.jpg"
-              alt="Mascot Coworking Space"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+            <Link
+              href="/member/spaces"
+              className="w-full sm:w-72 h-48 sm:h-52 rounded-2xl overflow-hidden shadow-md border border-white/80 flex-shrink-0 relative group block cursor-pointer bg-white"
+              title="Masuk untuk melihat reservasi lebih lanjut"
+            >
+              <img
+                src="/mascot1.jpg"
+                alt="Mascot Coworking Space"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors pointer-events-none" />
+              <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-[#2D3328] shadow-xs flex items-center gap-1 border border-black/5">
+                <span>Lihat Reservasi</span>
+                <span>→</span>
+              </div>
+            </Link>
 
             {/* Middle Benefit Texts */}
             <div className="flex-1 space-y-3 text-center lg:text-left">

@@ -98,5 +98,65 @@
     "alamat": "yayayayaya",
     "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790012771905-674329211.jpg",
     "updated_at": "2026-09-21T17:46:15.413Z"
+  },
+  "faddlimk2": {
+    "id": 1650,
+    "username": "faddlimk2",
+    "nama_member": "faddlimk2",
+    "instansi": "Universitas Brawijaya",
+    "telp": "082171236",
+    "alamat": "Jalan Rongawi no 27 Kota Rongawi",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790016940259-613233211.jpg",
+    "updated_at": "2026-09-21T18:55:41.192Z"
+  },
+  "id_1650": {
+    "id": 1650,
+    "username": "faddlimk2",
+    "nama_member": "faddlimk2",
+    "instansi": "Universitas Brawijaya",
+    "telp": "082171236",
+    "alamat": "Jalan Rongawi no 27 Kota Rongawi",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790016940259-613233211.jpg",
+    "updated_at": "2026-09-21T18:55:41.192Z"
+  },
+  "u93_631": {
+    "id": 1354,
+    "username": "u93_631",
+    "nama_member": "Test Member 93",
+    "instansi": "Test",
+    "telp": "08123456789",
+    "alamat": "Test",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790017269387-693704686.jpg",
+    "updated_at": "2026-09-21T19:01:10.057Z"
+  },
+  "id_1354": {
+    "id": 1354,
+    "username": "u93_631",
+    "nama_member": "Test Member 93",
+    "instansi": "Test",
+    "telp": "08123456789",
+    "alamat": "Test",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790017269387-693704686.jpg",
+    "updated_at": "2026-09-21T19:01:10.057Z"
+  },
+  "dlimember": {
+    "id": 1353,
+    "username": "dlimember",
+    "nama_member": "faddli member",
+    "instansi": "Universitas Indonesia",
+    "telp": "083732731",
+    "alamat": "Jalan Raya Gerilya Jakarta Barat",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790017485911-519878304.jpg",
+    "updated_at": "2026-09-21T19:04:54.100Z"
+  },
+  "id_1353": {
+    "id": 1353,
+    "username": "dlimember",
+    "nama_member": "faddli member",
+    "instansi": "Universitas Indonesia",
+    "telp": "083732731",
+    "alamat": "Jalan Raya Gerilya Jakarta Barat",
+    "foto": "https://learn.smktelkom-mlg.sch.id/coworking/uploads/members/1790017485911-519878304.jpg",
+    "updated_at": "2026-09-21T19:04:54.100Z"
   }
 }

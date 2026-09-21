@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/authcontext';
 import api from '@/services/api';
-import { getPhotoUrl } from '@/services/auth.services';
+import { getPhotoUrl, cleanMetadataText } from '@/services/auth.services';
 import Navbar from '@/components/Navbar';
 
 export default function AdminMembersPage() {
@@ -106,7 +106,7 @@ export default function AdminMembersPage() {
                 return {
                     ...m,
                     nama_member: m.nama_member || sProfile.nama_member,
-                    instansi: cleanInstansi || sProfile.instansi,
+                    instansi: cleanMetadataText(cleanInstansi || sProfile.instansi),
                     telp: m.telp || sProfile.telp,
                     alamat: m.alamat || sProfile.alamat,
                     foto: photo || '',
@@ -228,7 +228,7 @@ export default function AdminMembersPage() {
             username: username,
             password: '',
             nama_member: member.nama_member || '',
-            instansi: member.instansi || '',
+            instansi: cleanMetadataText(member.instansi || ''),
             alamat: member.alamat || '',
             telp: member.telp || '',
             foto: member.foto || cachedAvatar || '',
@@ -291,15 +291,11 @@ export default function AdminMembersPage() {
                 }
 
                 // Update Member (PUT /api/admin/members/{id})
-                let baseInstansi = form.instansi.trim() || 'Member';
-                let packedInstansi = baseInstansi;
-                if (form.foto) {
-                    packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: form.foto })}`;
-                }
+                let baseInstansi = cleanMetadataText(form.instansi.trim()) || 'Member';
 
                 const payload: any = {
                     nama_member: form.nama_member.trim(),
-                    instansi: packedInstansi,
+                    instansi: baseInstansi,
                     alamat: form.alamat.trim(),
                     telp: form.telp.trim(),
                     foto: form.foto || undefined,
@@ -362,17 +358,13 @@ export default function AdminMembersPage() {
                     return;
                 }
 
-                let baseInstansi = form.instansi.trim() || 'Member';
-                let packedInstansi = baseInstansi;
-                if (form.foto) {
-                    packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: form.foto })}`;
-                }
+                let baseInstansi = cleanMetadataText(form.instansi.trim()) || 'Member';
 
                 const payload = {
                     username: form.username.trim(),
                     password: form.password,
                     nama_member: form.nama_member.trim(),
-                    instansi: packedInstansi,
+                    instansi: baseInstansi,
                     alamat: form.alamat.trim(),
                     telp: form.telp.trim(),
                     foto: form.foto || undefined,
@@ -579,7 +571,7 @@ export default function AdminMembersPage() {
                                                             {member.nama_member}
                                                         </h3>
                                                         <p className="text-xs font-medium text-[#6E745F] truncate">
-                                                            {member.instansi || 'Independen'}
+                                                            {cleanMetadataText(member.instansi) || 'Independen'}
                                                         </p>
                                                     </div>
                                                 </div>

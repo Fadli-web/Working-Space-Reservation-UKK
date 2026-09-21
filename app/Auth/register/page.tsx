@@ -109,15 +109,13 @@ export default function RegisterMemberPage() {
 
             // 2. Submit Data Member (Endpoint No. 8: POST /api/auth/register/member)
             let baseInstansi = form.instansi.trim() || 'Member';
-            let packedInstansi = baseInstansi;
-            const photoUrl = uploadedFilename ? getPhotoUrl(uploadedFilename) : photoPreview;
-            if (photoUrl) {
-                packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: photoUrl })}`;
+            if (baseInstansi.includes('|||')) {
+                baseInstansi = baseInstansi.split('|||')[0].trim();
             }
 
             const payload = {
                 ...form,
-                instansi: packedInstansi,
+                instansi: baseInstansi,
                 foto: uploadedFilename || (selectedFile ? selectedFile.name : ''),
             };
 

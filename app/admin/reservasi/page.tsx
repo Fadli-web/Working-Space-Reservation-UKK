@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/authcontext';
 import api from '@/services/api';
-import { getPhotoUrl } from '@/services/auth.services';
+import { getPhotoUrl, cleanMetadataText, extractPackedPhoto } from '@/services/auth.services';
 import Navbar from '@/components/Navbar';
 
 export default function AdminReservasiPage() {
@@ -42,14 +42,22 @@ export default function AdminReservasiPage() {
                 if (!member) return item;
                 const username = (member.user?.username || member.username || '').toLowerCase();
                 const sProfile = serverStore[username] || serverStore[`id_${member.id}`] || {};
+
+                const rawInstansi = sProfile.instansi || member.instansi || '';
+                const cleanInstansi = cleanMetadataText(rawInstansi);
+                const packedPhoto = extractPackedPhoto(rawInstansi) || extractPackedPhoto(member.instansi);
+
+                const rawNama = sProfile.nama_member || member.nama_member || '';
+                const cleanNama = cleanMetadataText(rawNama);
+
                 return {
                     ...item,
                     member: {
                         ...member,
-                        nama_member: sProfile.nama_member || member.nama_member,
-                        instansi: sProfile.instansi || member.instansi,
+                        nama_member: cleanNama || member.nama_member || 'Pengguna',
+                        instansi: cleanInstansi,
                         telp: sProfile.telp || member.telp,
-                        foto: sProfile.foto || member.foto || '',
+                        foto: sProfile.foto || member.foto || packedPhoto || '',
                     },
                 };
             });
@@ -350,7 +358,7 @@ export default function AdminReservasiPage() {
                                                     {fin.space?.nama_space || fin.space?.nama || 'Ruangan Coworking'}
                                                 </h4>
                                                 <p className="text-[10px] font-bold text-[#7C816C] mt-1 uppercase tracking-widest">
-                                                    OLEH: {item.member?.nama_member || 'Pengguna'} {item.member?.instansi ? `• ${item.member.instansi}` : ''}
+                                                    OLEH: {cleanMetadataText(item.member?.nama_member) || 'Pengguna'} {cleanMetadataText(item.member?.instansi) ? `• ${cleanMetadataText(item.member.instansi)}` : ''}
                                                 </p>
                                             </div>
                                             <div className="text-right">
@@ -512,18 +520,18 @@ export default function AdminReservasiPage() {
                                         </h5>
                                         {member?.foto && (
                                             <div className="w-9 h-9 rounded-xl bg-white border border-[#EAECE6] overflow-hidden shrink-0 shadow-2xs">
-                                                <img src={getPhotoUrl(member.foto) || member.foto} alt={member?.nama_member} className="w-full h-full object-cover" />
+                                                <img src={getPhotoUrl(member.foto) || member.foto} alt={cleanMetadataText(member?.nama_member)} className="w-full h-full object-cover" />
                                             </div>
                                         )}
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                         <div>
                                             <span className="text-[#8F9485] font-semibold block text-[10px] uppercase tracking-wider">Nama Lengkap</span>
-                                            <p className="font-black text-[#2D3328] text-sm mt-0.5">{member?.nama_member || '-'}</p>
+                                            <p className="font-black text-[#2D3328] text-sm mt-0.5">{cleanMetadataText(member?.nama_member) || '-'}</p>
                                         </div>
                                         <div>
                                             <span className="text-[#8F9485] font-semibold block text-[10px] uppercase tracking-wider">Instansi / Perusahaan</span>
-                                            <p className="font-bold text-[#2D3328] mt-0.5">{member?.instansi || '-'}</p>
+                                            <p className="font-bold text-[#2D3328] mt-0.5">{cleanMetadataText(member?.instansi) || '-'}</p>
                                         </div>
                                         <div>
                                             <span className="text-[#8F9485] font-semibold block text-[10px] uppercase tracking-wider">Kontak WhatsApp / HP</span>
