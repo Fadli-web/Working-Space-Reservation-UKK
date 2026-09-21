@@ -105,10 +105,10 @@ export default function AdminMembersPage() {
 
                 return {
                     ...m,
-                    nama_member: sProfile.nama_member || m.nama_member,
-                    instansi: sProfile.instansi || cleanInstansi,
-                    telp: sProfile.telp || m.telp,
-                    alamat: sProfile.alamat || m.alamat,
+                    nama_member: m.nama_member || sProfile.nama_member,
+                    instansi: cleanInstansi || sProfile.instansi,
+                    telp: m.telp || sProfile.telp,
+                    alamat: m.alamat || sProfile.alamat,
                     foto: photo || '',
                 };
             });
@@ -291,9 +291,15 @@ export default function AdminMembersPage() {
                 }
 
                 // Update Member (PUT /api/admin/members/{id})
+                let baseInstansi = form.instansi.trim() || 'Member';
+                let packedInstansi = baseInstansi;
+                if (form.foto) {
+                    packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: form.foto })}`;
+                }
+
                 const payload: any = {
                     nama_member: form.nama_member.trim(),
-                    instansi: form.instansi.trim(),
+                    instansi: packedInstansi,
                     alamat: form.alamat.trim(),
                     telp: form.telp.trim(),
                     foto: form.foto || undefined,
@@ -310,7 +316,7 @@ export default function AdminMembersPage() {
                         member_id: form.id,
                         target_username: form.username,
                         nama_member: form.nama_member.trim(),
-                        instansi: form.instansi.trim(),
+                        instansi: baseInstansi,
                         alamat: form.alamat.trim(),
                         telp: form.telp.trim(),
                         foto: form.foto || undefined,
@@ -335,7 +341,7 @@ export default function AdminMembersPage() {
                                 JSON.stringify({
                                     ...existing,
                                     nama_member: form.nama_member.trim(),
-                                    instansi: form.instansi.trim(),
+                                    instansi: baseInstansi,
                                     alamat: form.alamat.trim(),
                                     telp: form.telp.trim(),
                                     foto: form.foto || existing.foto,
@@ -355,11 +361,18 @@ export default function AdminMembersPage() {
                     setIsSaving(false);
                     return;
                 }
+
+                let baseInstansi = form.instansi.trim() || 'Member';
+                let packedInstansi = baseInstansi;
+                if (form.foto) {
+                    packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: form.foto })}`;
+                }
+
                 const payload = {
                     username: form.username.trim(),
                     password: form.password,
                     nama_member: form.nama_member.trim(),
-                    instansi: form.instansi.trim(),
+                    instansi: packedInstansi,
                     alamat: form.alamat.trim(),
                     telp: form.telp.trim(),
                     foto: form.foto || undefined,

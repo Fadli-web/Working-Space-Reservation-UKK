@@ -140,7 +140,7 @@ export default function HomePage() {
 
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-5 z-10">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm border border-black/5 px-4 py-1 text-[11px] font-black uppercase tracking-wider text-[#474C3E]">
+              <span className="inline-flex items-center gap-2 rounded-md bg-white/80 backdrop-blur-sm border border-black/5 px-4 py-1 text-[11px] font-black uppercase tracking-wider text-[#474C3E]">
                 PREMIUM WORKSPACE COLLECTION
               </span>
 
@@ -492,34 +492,14 @@ export default function HomePage() {
         <section className="rounded-[2.5rem] bg-[#EAECE6] border border-[#DFE2DA] p-6 sm:p-9 shadow-xs">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
 
-            {/* Visual Kartu Metallic Olive AeroStep */}
-            <div className="w-full lg:w-72 h-44 rounded-2xl bg-gradient-to-tr from-[#2D3328] to-[#454B3B] p-5 text-white shadow-xl flex flex-col justify-between flex-shrink-0 relative overflow-hidden border border-white/20">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#EAECE6]/70">
-                    VIP PASS
-                  </span>
-                  <p className="text-base font-black tracking-wider uppercase mt-0.5">
-                    SmartSpace
-                  </p>
-                </div>
-                <span className="text-xs font-black text-[#EAECE6]">CLUB</span>
-              </div>
+            {/* Image Mascot di sebelah kiri untuk masuk melihat reservasi lebih lanjut */}
 
-              <div className="flex justify-between items-end">
-                <div>
-                  <span className="text-[9px] text-white/50 block">MEMBER ID</span>
-                  <span className="font-mono text-xs font-black text-white">#VIP-9942</span>
-                </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-white/80">
-                  <span>••••</span>
-                  <span>4821</span>
-                </div>
-              </div>
-
-              {/* Shimmer line */}
-              <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none" />
-            </div>
+            <img
+              src="/mascot1.jpg"
+              alt="Mascot Coworking Space"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
 
             {/* Middle Benefit Texts */}
             <div className="flex-1 space-y-3 text-center lg:text-left">
@@ -533,10 +513,10 @@ export default function HomePage() {
 
             {/* Action Button */}
             <Link
-              href="/Auth/register"
+              href="/Auth/login"
               className="rounded-full bg-[#2D3328] px-8 py-4 text-xs sm:text-sm font-black text-white hover:bg-black transition active:scale-95 shadow-md flex-shrink-0 cursor-pointer"
             >
-              Daftar Member VIP
+              Masuk Sekarang
             </Link>
 
           </div>

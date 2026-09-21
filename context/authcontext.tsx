@@ -78,11 +78,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (serverProfile) {
                     data.member = {
                         ...(data.member || { id: data.id, nama_member: data.username, instansi: '', alamat: '', telp: '' }),
-                        nama_member: serverProfile.nama_member || data.member?.nama_member || data.username,
-                        instansi: serverProfile.instansi !== undefined ? serverProfile.instansi : (data.member?.instansi || ''),
-                        alamat: serverProfile.alamat !== undefined ? serverProfile.alamat : (data.member?.alamat || ''),
-                        telp: serverProfile.telp !== undefined ? serverProfile.telp : (data.member?.telp || ''),
-                        foto: serverProfile.foto || data.member?.foto,
+                        nama_member: data.member?.nama_member || serverProfile.nama_member || data.username,
+                        instansi: (data.member?.instansi !== undefined && data.member?.instansi !== '') ? data.member.instansi : (serverProfile.instansi || ''),
+                        alamat: (data.member?.alamat !== undefined && data.member?.alamat !== '') ? data.member.alamat : (serverProfile.alamat || ''),
+                        telp: (data.member?.telp !== undefined && data.member?.telp !== '') ? data.member.telp : (serverProfile.telp || ''),
+                        foto: data.member?.foto || serverProfile.foto,
                     };
 
                     // Bersihkan jika serverProfile masih membawa format |||
@@ -115,21 +115,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     }
 
                     if (data.member) {
-                        if (savedAvatar) {
+                        if (data.member.foto) {
+                            if (avatarKey) {
+                                localStorage.setItem(avatarKey, data.member.foto);
+                            }
+                        } else if (savedAvatar) {
                             data.member.foto = savedAvatar;
-                        } else if (data.member.foto && avatarKey) {
-                            localStorage.setItem(avatarKey, data.member.foto);
-                        }
-
-                        // Auto-migrasi ke server jika ada data lokal yang belum tersimpan permanen
-                        if ((data.member.foto || savedOverrides) && uName) {
-                            authService.updateMemberProfile({
-                                nama_member: data.member.nama_member || data.username,
-                                instansi: data.member.instansi || '',
-                                telp: data.member.telp || '',
-                                alamat: data.member.alamat || '',
-                                foto: data.member.foto,
-                            }).catch(() => {});
+                            if (uName) {
+                                authService.updateMemberProfile({
+                                    nama_member: data.member.nama_member || data.username,
+                                    instansi: data.member.instansi || '',
+                                    telp: data.member.telp || '',
+                                    alamat: data.member.alamat || '',
+                                    foto: data.member.foto,
+                                }).catch(() => {});
+                            }
                         }
                     }
                 }
@@ -309,11 +309,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (serverProfile) {
             memberData = {
                 ...(memberData || { id: data.id, nama_member: data.username, instansi: '', alamat: '', telp: '' }),
-                nama_member: serverProfile.nama_member || memberData?.nama_member || data.username,
-                instansi: serverProfile.instansi !== undefined ? serverProfile.instansi : (memberData?.instansi || ''),
-                alamat: serverProfile.alamat !== undefined ? serverProfile.alamat : (memberData?.alamat || ''),
-                telp: serverProfile.telp !== undefined ? serverProfile.telp : (memberData?.telp || ''),
-                foto: serverProfile.foto || memberData?.foto,
+                nama_member: memberData?.nama_member || serverProfile.nama_member || data.username,
+                instansi: (memberData?.instansi !== undefined && memberData?.instansi !== '') ? memberData.instansi : (serverProfile.instansi || ''),
+                alamat: (memberData?.alamat !== undefined && memberData?.alamat !== '') ? memberData.alamat : (serverProfile.alamat || ''),
+                telp: (memberData?.telp !== undefined && memberData?.telp !== '') ? memberData.telp : (serverProfile.telp || ''),
+                foto: memberData?.foto || serverProfile.foto,
             };
 
             if (typeof window !== 'undefined') {
@@ -341,21 +341,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
             }
 
-            if (savedAvatar && memberData) {
-                memberData.foto = savedAvatar;
-            } else if (memberData?.foto && avatarKey) {
-                localStorage.setItem(avatarKey, memberData.foto);
-            }
-
-            // Migrasikan data lokal ke server secara permanen
-            if (memberData && uName) {
-                authService.updateMemberProfile({
-                    nama_member: memberData.nama_member || data.username,
-                    instansi: memberData.instansi || '',
-                    telp: memberData.telp || '',
-                    alamat: memberData.alamat || '',
-                    foto: memberData.foto,
-                }).catch(() => {});
+            if (memberData) {
+                if (memberData.foto) {
+                    if (avatarKey) {
+                        localStorage.setItem(avatarKey, memberData.foto);
+                    }
+                } else if (savedAvatar) {
+                    memberData.foto = savedAvatar;
+                    if (uName) {
+                        authService.updateMemberProfile({
+                            nama_member: memberData.nama_member || data.username,
+                            instansi: memberData.instansi || '',
+                            telp: memberData.telp || '',
+                            alamat: memberData.alamat || '',
+                            foto: memberData.foto,
+                        }).catch(() => {});
+                    }
+                }
             }
         }
 

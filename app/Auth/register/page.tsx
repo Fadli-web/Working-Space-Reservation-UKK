@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { authService } from '@/services/auth.services';
+import { authService, getPhotoUrl } from '@/services/auth.services';
 
 export default function RegisterMemberPage() {
     const router = useRouter();
@@ -108,8 +108,16 @@ export default function RegisterMemberPage() {
             }
 
             // 2. Submit Data Member (Endpoint No. 8: POST /api/auth/register/member)
+            let baseInstansi = form.instansi.trim() || 'Member';
+            let packedInstansi = baseInstansi;
+            const photoUrl = uploadedFilename ? getPhotoUrl(uploadedFilename) : photoPreview;
+            if (photoUrl) {
+                packedInstansi = `${baseInstansi}|||${JSON.stringify({ foto: photoUrl })}`;
+            }
+
             const payload = {
                 ...form,
+                instansi: packedInstansi,
                 foto: uploadedFilename || (selectedFile ? selectedFile.name : ''),
             };
 
